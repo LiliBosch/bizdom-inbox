@@ -33,7 +33,7 @@ class ConversationRepository
     {
         return $user->conversations()
             ->where('conversations.id', $conversation->id)
-            ->with(['participants', 'messages.sender'])
+            ->with(['participants', 'messages.sender', 'messages.recipients'])
             ->firstOrFail();
     }
 

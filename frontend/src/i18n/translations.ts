@@ -38,9 +38,17 @@ export const translations = {
     'thread.recipientsLabel': 'Recipients',
 
     'ticketStatus.received': 'Received',
-    'ticketStatus.reviewed': 'Reviewed',
+    'ticketStatus.reviewed': 'Opened',
     'ticketStatus.inProgress': 'In progress',
     'ticketStatus.resolved': 'Resolved',
+    'ticketStatus.setStatus': 'Set status',
+    'ticketStatus.receivedAt': 'Received:',
+    'ticketStatus.reviewedAt': 'Opened:',
+    'ticketStatus.inProgressAt': 'In progress:',
+    'ticketStatus.resolvedAt': 'Resolved:',
+
+    'messageReceipts.delivered': 'Delivered',
+    'messageReceipts.read': 'Read',
     'ticketStatus.label': 'Ticket status',
 
     'composer.placeholder': 'Write your reply',
@@ -100,9 +108,17 @@ export const translations = {
     'thread.recipientsLabel': 'Destinatarios',
 
     'ticketStatus.received': 'Recibido',
-    'ticketStatus.reviewed': 'Revisado',
+    'ticketStatus.reviewed': 'Abierto',
     'ticketStatus.inProgress': 'En progreso',
     'ticketStatus.resolved': 'Resuelto',
+    'ticketStatus.setStatus': 'Cambiar estado',
+    'ticketStatus.receivedAt': 'Recibido:',
+    'ticketStatus.reviewedAt': 'Abierto:',
+    'ticketStatus.inProgressAt': 'En progreso:',
+    'ticketStatus.resolvedAt': 'Resuelto:',
+
+    'messageReceipts.delivered': 'Entregado',
+    'messageReceipts.read': 'Leído',
     'ticketStatus.label': 'Estado del ticket',
 
     'composer.placeholder': 'Escribe tu respuesta',

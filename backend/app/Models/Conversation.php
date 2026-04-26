@@ -23,6 +23,10 @@ class Conversation extends Model
     {
         return [
             'last_message_at' => 'datetime',
+            'status_received_at' => 'datetime',
+            'status_reviewed_at' => 'datetime',
+            'status_in_progress_at' => 'datetime',
+            'status_resolved_at' => 'datetime',
         ];
     }
 

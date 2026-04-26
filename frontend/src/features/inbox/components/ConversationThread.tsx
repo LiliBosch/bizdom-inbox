@@ -26,15 +26,45 @@ export function ConversationThread({ conversation, currentUser, onReply, onUpdat
           <TicketStatusBadge status={conversation.status} />
           <label className="thread-status" aria-label={t('ticketStatus.label')}>
             <select
-              value={conversation.status}
+              value={conversation.status === 'in_progress' || conversation.status === 'resolved' ? conversation.status : ''}
               onChange={(event) => onUpdateStatus(conversation.id, event.target.value as TicketStatus)}
             >
-              <option value="received">{t('ticketStatus.received')}</option>
-              <option value="reviewed">{t('ticketStatus.reviewed')}</option>
+              <option value="" disabled>
+                {t('ticketStatus.setStatus')}
+              </option>
               <option value="in_progress">{t('ticketStatus.inProgress')}</option>
               <option value="resolved">{t('ticketStatus.resolved')}</option>
             </select>
           </label>
+        </div>
+        <div className="thread-status-timestamps">
+          {(() => {
+            const timestamp =
+              conversation.status === 'resolved'
+                ? conversation.status_resolved_at
+                : conversation.status === 'in_progress'
+                  ? conversation.status_in_progress_at
+                  : conversation.status === 'reviewed'
+                    ? conversation.status_reviewed_at
+                    : conversation.status_received_at;
+
+            if (!timestamp) return null;
+
+            const label =
+              conversation.status === 'resolved'
+                ? t('ticketStatus.resolvedAt')
+                : conversation.status === 'in_progress'
+                  ? t('ticketStatus.inProgressAt')
+                  : conversation.status === 'reviewed'
+                    ? t('ticketStatus.reviewedAt')
+                    : t('ticketStatus.receivedAt');
+
+            return (
+              <span>
+                {label} {new Date(timestamp).toLocaleString()}
+              </span>
+            );
+          })()}
         </div>
         <span>{t('thread.subjectLabel')}</span>
         <h1>{conversation.subject}</h1>

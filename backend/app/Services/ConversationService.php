@@ -33,6 +33,7 @@ class ConversationService
             $conversation = Conversation::create([
                 'subject' => $data['subject'],
                 'status' => self::STATUS_RECEIVED,
+                'status_received_at' => now(),
                 'created_by' => $sender->id,
                 'last_message_at' => now(),
             ]);
@@ -45,12 +46,24 @@ class ConversationService
                 'read_at' => now(),
             ]);
 
-            $conversation->messages()->create([
+            $message = $conversation->messages()->create([
                 'sender_id' => $sender->id,
                 'body' => $data['body'],
             ]);
 
-            return $conversation->load(['participants', 'messages.sender']);
+            $recipientIds = $conversation->participants()
+                ->where('users.id', '!=', $sender->id)
+                ->pluck('users.id')
+                ->all();
+
+            if (count($recipientIds) > 0) {
+                $message->recipients()->syncWithPivotValues($recipientIds, [
+                    'delivered_at' => now(),
+                    'read_at' => null,
+                ]);
+            }
+
+            return $conversation->load(['participants', 'messages.sender', 'messages.recipients']);
         });
     }
 
@@ -62,7 +75,17 @@ class ConversationService
             'You are not allowed to update this conversation.'
         );
 
-        $conversation->forceFill(['status' => $status])->save();
+        $conversation->forceFill(['status' => $status]);
+
+        if ($status === self::STATUS_IN_PROGRESS && $conversation->status_in_progress_at === null) {
+            $conversation->forceFill(['status_in_progress_at' => now()]);
+        }
+
+        if ($status === self::STATUS_RESOLVED && $conversation->status_resolved_at === null) {
+            $conversation->forceFill(['status_resolved_at' => now()]);
+        }
+
+        $conversation->save();
 
         return $conversation;
     }
@@ -81,6 +104,18 @@ class ConversationService
                 'body' => $body,
             ]);
 
+            $recipientIds = $conversation->participants()
+                ->where('users.id', '!=', $sender->id)
+                ->pluck('users.id')
+                ->all();
+
+            if (count($recipientIds) > 0) {
+                $message->recipients()->syncWithPivotValues($recipientIds, [
+                    'delivered_at' => now(),
+                    'read_at' => null,
+                ]);
+            }
+
             $conversation->forceFill(['last_message_at' => now()])->save();
 
             $conversation->participants()
@@ -94,14 +129,34 @@ class ConversationService
                 'read_at' => now(),
             ]);
 
-            return $message->load('sender');
+            return $message->load(['sender', 'recipients']);
         });
     }
 
     public function markAsRead(Conversation $conversation, User $user): void
     {
+        $now = now();
+
         $conversation->participants()->updateExistingPivot($user->id, [
-            'read_at' => now(),
+            'read_at' => $now,
         ]);
+
+        $conversation->messages()
+            ->where('sender_id', '!=', $user->id)
+            ->pluck('id')
+            ->each(function (int $messageId) use ($user, $now) {
+                DB::table('message_user')
+                    ->where('message_id', $messageId)
+                    ->where('user_id', $user->id)
+                    ->whereNull('read_at')
+                    ->update(['read_at' => $now, 'updated_at' => $now]);
+            });
+
+        if ($conversation->status === self::STATUS_RECEIVED && $conversation->status_reviewed_at === null) {
+            $conversation->forceFill([
+                'status' => self::STATUS_REVIEWED,
+                'status_reviewed_at' => $now,
+            ])->save();
+        }
     }
 }

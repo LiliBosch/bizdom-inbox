@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 
 class MessageResource extends JsonResource
 {
@@ -13,6 +14,17 @@ class MessageResource extends JsonResource
             'id' => $this->id,
             'body' => $this->body,
             'sender' => new UserResource($this->whenLoaded('sender')),
+            'receipts' => $this->whenLoaded('recipients', function () {
+                return $this->recipients->map(fn ($user) => [
+                    'user' => new UserResource($user),
+                    'delivered_at' => $user->pivot->delivered_at
+                        ? Carbon::parse($user->pivot->delivered_at)->toISOString()
+                        : null,
+                    'read_at' => $user->pivot->read_at
+                        ? Carbon::parse($user->pivot->read_at)->toISOString()
+                        : null,
+                ])->values();
+            }),
             'created_at' => $this->created_at?->toISOString(),
         ];
     }

@@ -15,7 +15,7 @@ class UpdateConversationStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', 'string', 'in:'.implode(',', ConversationService::STATUSES)],
+            'status' => ['required', 'string', 'in:in_progress,resolved'],
         ];
     }
 }

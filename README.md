@@ -212,7 +212,16 @@ GET    /api/notifications/unread-count
 
 ## Ticket Status Workflow
 
-The ticket status workflow feature allows users to update the status of a conversation. The available statuses are: Received, Reviewed, In Progress, and Resolved.
+The ticket status workflow feature allows users to manage a conversation like a ticket.
+
+Statuses:
+
+- `received` (Received)
+- `reviewed` (Opened)
+- `in_progress` (In progress)
+- `resolved` (Resolved)
+
+Only `in_progress` and `resolved` are manually selectable in the UI.
 
 ### API Endpoint
 
@@ -229,6 +238,42 @@ This endpoint expects a JSON payload with the new status:
   "status": "in_progress"
 }
 ```
+
+### Automatic transitions and timestamps
+
+The following transitions are automatic:
+
+- When a conversation is created:
+  - `status` is set to `received`
+  - `status_received_at` is set
+
+- When a participant opens the conversation thread (GET `/api/conversations/{conversation}`):- the conversation is marked as read for that participant (`conversation_user.read_at`)
+  - if the conversation was `received`, it transitions to `reviewed` (Opened) and sets `status_reviewed_at`
+
+Manual transitions:
+
+- Setting `in_progress` sets `status_in_progress_at` (first time only)
+- Setting `resolved` sets `status_resolved_at` (first time only)
+
+Timestamps stored on `conversations`:
+
+- `status_received_at`
+- `status_reviewed_at`
+- `status_in_progress_at`
+- `status_resolved_at`
+
+The UI shows the timestamp for the current and latest status only.
+
+## Message delivery + read receipts
+
+In addition to the ticket workflow, the system tracks delivery and read receipts for each message so the sender can see when a recipient received or opened a message.
+
+Receipts are stored in the `message_user` pivot table:
+
+- `delivered_at`: set when a message is created for each recipient
+- `read_at`: set when a recipient opens the conversation thread
+
+In API responses, messages include a `receipts` array with per-recipient timestamps.
 
 ## Demo data
 

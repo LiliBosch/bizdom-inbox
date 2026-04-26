@@ -15,6 +15,7 @@ class ConversationFactory extends Factory
         return [
             'subject' => fake()->sentence(4),
             'status' => 'received',
+            'status_received_at' => now(),
             'created_by' => User::factory(),
             'last_message_at' => now(),
         ];

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Conversation;
+use App\Models\Message;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -118,5 +119,52 @@ class ConversationTest extends TestCase
             'id' => $conversation->id,
             'status' => 'resolved',
         ]);
+    }
+
+    public function test_opening_conversation_sets_reviewed_status_and_marks_message_receipts_read(): void
+    {
+        $sender = User::factory()->create();
+        $recipient = User::factory()->create();
+
+        $conversation = Conversation::factory()->create([
+            'created_by' => $sender->id,
+            'status' => 'received',
+        ]);
+        $conversation->participants()->sync([
+            $sender->id => ['read_at' => now()],
+            $recipient->id => ['read_at' => null],
+        ]);
+
+        $message = Message::factory()->create([
+            'conversation_id' => $conversation->id,
+            'sender_id' => $sender->id,
+            'body' => 'Hola',
+        ]);
+        $message->recipients()->syncWithPivotValues([$recipient->id], [
+            'delivered_at' => now(),
+            'read_at' => null,
+        ]);
+
+        Sanctum::actingAs($recipient);
+
+        $response = $this->getJson("/api/conversations/{$conversation->id}");
+        $response->assertOk();
+
+        $this->assertDatabaseHas('conversations', [
+            'id' => $conversation->id,
+            'status' => 'reviewed',
+        ]);
+
+        $this->assertDatabaseHas('message_user', [
+            'message_id' => $message->id,
+            'user_id' => $recipient->id,
+        ]);
+
+        $this->assertNotNull(
+            \DB::table('message_user')
+                ->where('message_id', $message->id)
+                ->where('user_id', $recipient->id)
+                ->value('read_at')
+        );
     }
 }
