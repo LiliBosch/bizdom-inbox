@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Services\ConversationService;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateConversationStatusRequest extends FormRequest

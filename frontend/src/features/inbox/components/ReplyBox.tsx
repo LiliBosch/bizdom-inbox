@@ -15,7 +15,7 @@ function setLocalStorageItem(key: string, value: string) {
   try {
     localStorage.setItem(key, value);
   } catch {
-    // ignore
+    return;
   }
 }
 
@@ -23,7 +23,7 @@ function removeLocalStorageItem(key: string) {
   try {
     localStorage.removeItem(key);
   } catch {
-    // ignore
+    return;
   }
 }
 
