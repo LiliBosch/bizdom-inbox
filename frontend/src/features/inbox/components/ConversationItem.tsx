@@ -1,4 +1,5 @@
 import type { Conversation } from '../types';
+import { useLanguage } from '../../../context/LanguageContext';
 
 type Props = {
   conversation: Conversation;
@@ -7,7 +8,8 @@ type Props = {
 };
 
 export function ConversationItem({ conversation, isActive, onSelect }: Props) {
-  const lastMessage = conversation.messages?.[0]?.body ?? 'Sin mensajes todavia';
+  const { t } = useLanguage();
+  const lastMessage = conversation.messages?.[0]?.body ?? t('conversation.noMessagesYet');
   const isUnread = Boolean(conversation.is_unread);
 
   return (
@@ -19,7 +21,7 @@ export function ConversationItem({ conversation, isActive, onSelect }: Props) {
     >
       <span className="conversation-row">
         <strong>{conversation.subject}</strong>
-        {conversation.is_unread && <span className="unread-dot" aria-label="No leído" />}
+        {conversation.is_unread && <span className="unread-dot" aria-label={t('conversation.unreadAria')} />}
       </span>
       <span className="conversation-preview">{lastMessage}</span>
     </button>

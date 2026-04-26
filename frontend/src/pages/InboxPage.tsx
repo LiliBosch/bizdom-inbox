@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { LogOut, MailPlus, Moon, Search, Sun } from 'lucide-react';
 import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { ConversationList } from '../features/inbox/components/ConversationList';
 import { ConversationThread } from '../features/inbox/components/ConversationThread';
 import { NewConversationModal } from '../features/inbox/components/NewConversationModal';
@@ -14,6 +15,7 @@ type InboxPageProps = {
 
 export function InboxPage({ theme, onToggleTheme }: InboxPageProps) {
   const { user, token, signOut } = useAuth();
+  const { language, toggleLanguage, t } = useLanguage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const inbox = useConversations(token);
 
@@ -33,7 +35,7 @@ export function InboxPage({ theme, onToggleTheme }: InboxPageProps) {
             id="search"
             value={inbox.search}
             onChange={(event) => inbox.setSearch(event.target.value)}
-            placeholder="Buscar conversaciones"
+            placeholder={t('inbox.searchPlaceholder')}
           />
         </label>
 
@@ -44,7 +46,7 @@ export function InboxPage({ theme, onToggleTheme }: InboxPageProps) {
             onChange={(event) => inbox.setUnreadOnly(event.target.checked)}
           />
           <span className="toggle-text">
-            No leídos
+            {t('inbox.unreadOnly')}
             {inbox.unreadCount > 0 && (
               <span className="unread-count-badge">{inbox.unreadCount}</span>
             )}
@@ -54,9 +56,19 @@ export function InboxPage({ theme, onToggleTheme }: InboxPageProps) {
         <Button
           type="button"
           variant="ghost"
+          className="theme-toggle language-toggle"
+          onClick={toggleLanguage}
+          aria-label={t('common.language')}
+        >
+          {language.toUpperCase()}
+        </Button>
+
+        <Button
+          type="button"
+          variant="ghost"
           className="theme-toggle"
           onClick={onToggleTheme}
-          aria-label={theme === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+          aria-label={theme === 'dark' ? t('theme.toLight') : t('theme.toDark')}
         >
           {theme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
         </Button>
@@ -68,7 +80,7 @@ export function InboxPage({ theme, onToggleTheme }: InboxPageProps) {
           onClick={() => setIsModalOpen(true)}
         >
           <MailPlus size={18} aria-hidden="true" />
-          Nuevo mensaje
+          {t('inbox.newMessage')}
         </Button>
 
         <div className="topbar-right">
@@ -77,7 +89,7 @@ export function InboxPage({ theme, onToggleTheme }: InboxPageProps) {
             variant="ghost"
             className="logout-button"
             onClick={signOut}
-            aria-label="Cerrar sesion"
+            aria-label={t('inbox.signOut')}
           >
             <LogOut size={18} aria-hidden="true" />
           </Button>
@@ -87,7 +99,7 @@ export function InboxPage({ theme, onToggleTheme }: InboxPageProps) {
       {inbox.error && <p className="page-error">{inbox.error}</p>}
 
       <div className="inbox-shell">
-        <aside className="sidebar" aria-label="Conversaciones">
+        <aside className="sidebar" aria-label={t('inbox.conversationsAria')}>
           <ConversationList
             conversations={inbox.conversations}
             selectedId={inbox.selectedConversation?.id}

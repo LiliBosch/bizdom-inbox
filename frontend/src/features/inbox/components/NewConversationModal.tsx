@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { Input } from '../../../components/Input';
 import { useAuth } from '../../../context/AuthContext';
+import { useLanguage } from '../../../context/LanguageContext';
 import * as usersApi from '../../../api/usersApi';
 import type { User } from '../types';
 
@@ -13,6 +14,7 @@ type Props = {
 
 export function NewConversationModal({ onClose, onCreate }: Props) {
   const { token } = useAuth();
+  const { t } = useLanguage();
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [users, setUsers] = useState<User[]>([]);
@@ -32,7 +34,7 @@ export function NewConversationModal({ onClose, onCreate }: Props) {
       })
       .catch((err) => {
         if (!isMounted) return;
-        setError(err instanceof Error ? err.message : 'No fue posible cargar destinatarios.');
+        setError(err instanceof Error ? err.message : t('modal.loadRecipientsError'));
       });
 
     return () => {
@@ -54,7 +56,7 @@ export function NewConversationModal({ onClose, onCreate }: Props) {
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No fue posible crear el hilo.');
+      setError(err instanceof Error ? err.message : t('modal.createThreadError'));
     } finally {
       setIsSaving(false);
     }
@@ -72,18 +74,18 @@ export function NewConversationModal({ onClose, onCreate }: Props) {
     <div className="modal-backdrop" role="presentation">
       <section className="modal" role="dialog" aria-modal="true" aria-labelledby="new-message-title">
         <header className="modal-header">
-          <h2 id="new-message-title">Nuevo mensaje</h2>
-          <Button variant="ghost" type="button" onClick={onClose} aria-label="Cerrar modal">
+          <h2 id="new-message-title">{t('modal.newMessageTitle')}</h2>
+          <Button variant="ghost" type="button" onClick={onClose} aria-label={t('modal.close')}>
             <X size={18} />
           </Button>
         </header>
         <form className="modal-form" onSubmit={handleSubmit}>
-          <Input label="Asunto" value={subject} onChange={(event) => setSubject(event.target.value)} required />
+          <Input label={t('modal.subject')} value={subject} onChange={(event) => setSubject(event.target.value)} required />
           <div className="field">
-            <span>Para</span>
+            <span>{t('modal.to')}</span>
             <div className="recipients-list">
               {users.length === 0 ? (
-                <p className="loading-text">Cargando contactos...</p>
+                <p className="loading-text">{t('modal.loadingContacts')}...</p>
               ) : (
                 users.map((user) => (
                   <div key={user.id} className="recipient-checkbox">
@@ -103,13 +105,14 @@ export function NewConversationModal({ onClose, onCreate }: Props) {
             </div>
             {selectedUserIds.length > 0 && (
               <p className="selected-count">
-                {selectedUserIds.length}{' '}
-                {selectedUserIds.length === 1 ? 'destinatario seleccionado' : 'destinatarios seleccionados'}
+                {selectedUserIds.length === 1
+                  ? t('modal.selectedRecipients_one', { count: selectedUserIds.length })
+                  : t('modal.selectedRecipients_other', { count: selectedUserIds.length })}
               </p>
             )}
           </div>
           <label className="field" htmlFor="message-body">
-            <span>Mensaje</span>
+            <span>{t('modal.message')}</span>
             <textarea
               id="message-body"
               value={body}
@@ -121,10 +124,10 @@ export function NewConversationModal({ onClose, onCreate }: Props) {
           {error && <p className="form-error">{error}</p>}
           <div className="modal-actions">
             <Button type="button" variant="ghost" onClick={onClose}>
-              Cancelar
+              {t('modal.cancel')}
             </Button>
             <Button type="submit" disabled={isSaving}>
-              {isSaving ? 'Enviando' : 'Enviar mensaje'}
+              {isSaving ? t('modal.sending') : t('modal.send')}
             </Button>
           </div>
         </form>

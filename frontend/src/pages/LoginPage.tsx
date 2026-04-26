@@ -3,6 +3,7 @@ import { Moon, Sun } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 type LoginPageProps = {
   theme: 'light' | 'dark';
@@ -11,6 +12,7 @@ type LoginPageProps = {
 
 export function LoginPage({ theme, onToggleTheme }: LoginPageProps) {
   const { signIn } = useAuth();
+  const { language, toggleLanguage, t } = useLanguage();
   const [email, setEmail] = useState('ana@bizdom.test');
   const [password, setPassword] = useState('password');
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +26,7 @@ export function LoginPage({ theme, onToggleTheme }: LoginPageProps) {
     try {
       await signIn(email, password);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No fue posible iniciar sesion.');
+      setError(err instanceof Error ? err.message : t('auth.signInError'));
     } finally {
       setIsLoading(false);
     }
@@ -43,26 +45,36 @@ export function LoginPage({ theme, onToggleTheme }: LoginPageProps) {
             variant="ghost"
             className="theme-toggle"
             onClick={onToggleTheme}
-            aria-label={theme === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+            aria-label={theme === 'dark' ? t('theme.toLight') : t('theme.toDark')}
           >
             {theme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
           </Button>
         </div>
       </div>
 
+      <Button
+        type="button"
+        variant="ghost"
+        className={`theme-toggle login-language-toggle ${language === 'en' ? 'is-english' : ''}`}
+        onClick={toggleLanguage}
+        aria-label={t('common.language')}
+      >
+        {language.toUpperCase()}
+      </Button>
+
       <div className="login-shell">
         <form className="login-panel" onSubmit={handleSubmit}>
-          <h1>Bienvenido</h1>
-          <p className="login-subtitle">Ingresa tus credenciales para continuar.</p>
+          <h1>{t('auth.welcomeTitle')}</h1>
+          <p className="login-subtitle">{t('auth.welcomeSubtitle')}</p>
           <Input
-            label="Correo"
+            label={t('auth.emailLabel')}
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
           />
           <Input
-            label="Contrasena"
+            label={t('auth.passwordLabel')}
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
@@ -70,7 +82,7 @@ export function LoginPage({ theme, onToggleTheme }: LoginPageProps) {
           />
           {error && <p className="form-error">{error}</p>}
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? 'Entrando' : 'Entrar'}
+            {isLoading ? t('auth.signingIn') : t('auth.signIn')}
           </Button>
         </form>
       </div>

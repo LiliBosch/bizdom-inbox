@@ -2,6 +2,7 @@ import { EmptyState } from '../../../components/EmptyState';
 import { Button } from '../../../components/Button';
 import type { Conversation } from '../types';
 import { ConversationItem } from './ConversationItem';
+import { useLanguage } from '../../../context/LanguageContext';
 
 type Props = {
   conversations: Conversation[];
@@ -13,16 +14,18 @@ type Props = {
 };
 
 export function ConversationList({ conversations, selectedId, isLoading, onSelect, hasMore, onLoadMore }: Props) {
+  const { t } = useLanguage();
+
   if (isLoading) {
-    return <EmptyState title="Cargando" text="Estamos buscando tus conversaciones." />;
+    return <EmptyState title={t('list.loadingTitle')} text={t('list.loadingText')} />;
   }
 
   if (conversations.length === 0) {
-    return <EmptyState title="Sin conversaciones" text="Crea un nuevo mensaje para iniciar un hilo." />;
+    return <EmptyState title={t('list.emptyTitle')} text={t('list.emptyText')} />;
   }
 
   return (
-    <div className="conversation-list" aria-label="Lista de conversaciones">
+    <div className="conversation-list" aria-label={t('list.aria')}>
       {conversations.map((conversation) => (
         <ConversationItem
           key={conversation.id}
@@ -35,7 +38,7 @@ export function ConversationList({ conversations, selectedId, isLoading, onSelec
       {hasMore && onLoadMore && (
         <div style={{ padding: '12px' }}>
           <Button type="button" variant="ghost" onClick={onLoadMore} style={{ width: '100%' }}>
-            Cargar más
+            {t('list.loadMore')}
           </Button>
         </div>
       )}

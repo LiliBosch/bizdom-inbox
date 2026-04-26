@@ -1,8 +1,10 @@
 import { FormEvent, useState } from 'react';
 import { Send } from 'lucide-react';
 import { Button } from '../../../components/Button';
+import { useLanguage } from '../../../context/LanguageContext';
 
 export function ReplyBox({ onSubmit }: { onSubmit: (body: string) => Promise<void> }) {
+  const { t } = useLanguage();
   const [body, setBody] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +20,7 @@ export function ReplyBox({ onSubmit }: { onSubmit: (body: string) => Promise<voi
       await onSubmit(body.trim());
       setBody('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No fue posible enviar la respuesta.');
+      setError(err instanceof Error ? err.message : t('composer.sendError'));
     } finally {
       setIsSending(false);
     }
@@ -29,13 +31,13 @@ export function ReplyBox({ onSubmit }: { onSubmit: (body: string) => Promise<voi
       <textarea
         value={body}
         onChange={(event) => setBody(event.target.value)}
-        placeholder="Escribe tu respuesta..."
+        placeholder={t('composer.placeholder')}
         rows={4}
       />
       {error && <p className="form-error">{error}</p>}
       <Button disabled={isSending || !body.trim()} type="submit">
         <Send size={18} aria-hidden="true" />
-        {isSending ? 'Enviando' : 'Enviar'}
+        {isSending ? t('composer.sending') : t('composer.send')}
       </Button>
     </form>
   );

@@ -170,6 +170,9 @@ docker compose exec frontend npm run test -- --run
   - `AuthContext` for session management and persistence in localStorage.
   - `useConversations` hook for state, data fetching, and pagination.
   - Global handling of `401 Unauthorized` to automatically sign out.
+  - UI language toggle (EN/ES) implemented via `LanguageContext` + `src/i18n/translations.ts`.
+    - Only UI labels/placeholders/buttons are translated.
+    - Message content, subjects, and user names are not translated.
 
 ## Quick checklist (what you can test)
 

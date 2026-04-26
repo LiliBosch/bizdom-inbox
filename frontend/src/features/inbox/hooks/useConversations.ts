@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import * as conversationsApi from '../../../api/conversationsApi';
 import type { Conversation } from '../types';
 
@@ -10,15 +10,15 @@ export function useConversations(token: string | null) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [loadRequestId, setLoadRequestId] = useState(0);
+  const loadRequestIdRef = useRef(0);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const perPage = 10;
 
   const loadConversations = useCallback(async (nextPage: number, mode: 'replace' | 'append') => {
     if (!token) return;
-    const requestId = loadRequestId + 1;
-    setLoadRequestId(requestId);
+    const requestId = loadRequestIdRef.current + 1;
+    loadRequestIdRef.current = requestId;
     setIsLoading(true);
     setError(null);
 
@@ -31,7 +31,7 @@ export function useConversations(token: string | null) {
       });
 
       setConversations((current) => {
-        if (requestId !== loadRequestId + 1) return current;
+        if (requestId !== loadRequestIdRef.current) return current;
         const incoming = response.data;
         return mode === 'append' ? [...current, ...incoming] : incoming;
       });
@@ -39,11 +39,11 @@ export function useConversations(token: string | null) {
       setPage(nextPage);
       setLastPage(response.meta?.last_page ?? 1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar conversaciones.');
+      setError(err instanceof Error ? err.message : 'Unable to load conversations.');
     } finally {
       setIsLoading(false);
     }
-  }, [loadRequestId, search, token, unreadOnly]);
+  }, [search, token, unreadOnly]);
 
   const loadMoreConversations = useCallback(async () => {
     if (isLoading) return;
@@ -58,7 +58,7 @@ export function useConversations(token: string | null) {
       const count = Number(response.unread_count);
       setUnreadCount(count);
     } catch (err) {
-      console.error('Error al cargar contador de no leídos:', err);
+      console.error('Unable to load unread count:', err);
     }
   }, [token]);
 
@@ -72,7 +72,7 @@ export function useConversations(token: string | null) {
       );
       await loadUnreadCount();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al abrir conversación.');
+      setError(err instanceof Error ? err.message : 'Unable to open conversation.');
     }
   }
 

@@ -22,12 +22,14 @@ export async function http<T>(path: string, options: RequestOptions = {}): Promi
   });
 
   if (response.status === 401) {
+    localStorage.removeItem('bizdom_inbox_token');
+    localStorage.removeItem('bizdom_inbox_user');
     window.dispatchEvent(new CustomEvent('bizdom:unauthorized'));
   }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.message ?? (response.status === 401 ? 'Sesión expirada. Inicia sesión nuevamente.' : 'No fue posible completar la solicitud.'));
+    throw new Error(error.message ?? (response.status === 401 ? 'Session expired. Please sign in again.' : 'Unable to complete the request.'));
   }
 
   return response.json() as Promise<T>;
