@@ -73,6 +73,7 @@ export function InboxPage({ theme, onToggleTheme }: InboxPageProps) {
             value={inbox.search}
             onChange={(event) => inbox.setSearch(event.target.value)}
             placeholder={t('inbox.searchPlaceholder')}
+            aria-label={t('inbox.searchPlaceholder')}
           />
         </label>
 

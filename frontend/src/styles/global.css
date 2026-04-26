@@ -45,6 +45,18 @@ textarea {
   font: inherit;
 }
 
+.sr-only {
+  clip: rect(0 0 0 0);
+  border: 0;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
 .button {
   align-items: center;
   border: 0;
@@ -63,6 +75,15 @@ textarea {
 .button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.button:focus-visible,
+.conversation-item:focus-visible,
+.thread-status select:focus-visible,
+.toggle input:focus-visible,
+.recipient-checkbox input:focus-visible {
+  outline: 3px solid rgba(0, 113, 227, 0.42);
+  outline-offset: 3px;
 }
 
 .button-primary {
@@ -170,11 +191,11 @@ textarea {
   color: rgba(162, 178, 194, 0.8);
 }
 
-.field input:focus,
-.field select:focus,
-.field textarea:focus,
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible,
 .search-box:focus-within,
-.reply-box textarea:focus {
+.reply-box textarea:focus-visible {
   border-color: var(--brand-blue);
   box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.18);
 }

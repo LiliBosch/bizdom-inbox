@@ -21,6 +21,7 @@ Inbox style messaging module (similar to a support ticket inbox) built with Lara
   - Light/dark theme toggle with saved preference (localStorage: `bizdom_inbox_theme`)
   - Language toggle (EN/ES) for UI labels
   - Visual indicator for pending conversations (unread)
+  - Accessible labels and visible keyboard focus for primary controls
   - Reply draft autosave per conversation (localStorage)
   - Keyboard shortcuts:
     - Cmd/Ctrl + K: focus search
@@ -199,6 +200,11 @@ Frontend tests cover the inbox list, loading and empty states, search and unread
   - Reminder alert:
     - Rendered when the API includes `latest_reminder`.
     - Demo seed data includes one reviewed conversation with an overdue reminder.
+  - Accessibility/keyboard polish:
+    - Search has an explicit accessible label.
+    - Primary controls use visible `:focus-visible` states.
+    - The unread indicator includes screen-reader text.
+    - The new-message modal focuses the subject field on open and closes with Esc.
   - Keyboard shortcuts:
     - Cmd or Ctrl + K focuses the search input.
     - Esc clears the search input (or closes the new conversation modal when open).

@@ -13,6 +13,7 @@ test('selecciona destinatarios, valida campos y envia la conversacion', async ()
   renderWithProviders(<NewConversationModal onClose={onClose} onCreate={onCreate} />);
 
   const submitButton = screen.getByRole('button', { name: 'Send message' });
+  expect(screen.getByLabelText('Subject')).toHaveFocus();
   expect(submitButton).toBeDisabled();
 
   fireEvent.change(screen.getByLabelText('Subject'), {
@@ -40,5 +41,18 @@ test('selecciona destinatarios, valida campos y envia la conversacion', async ()
       participant_ids: [bobUser.id],
     });
   });
+  expect(onClose).toHaveBeenCalled();
+});
+
+test('cierra el modal con Escape', async () => {
+  const onClose = vi.fn();
+  usersApiMock.getUsers.mockResolvedValue({ data: [bobUser] });
+
+  renderWithProviders(<NewConversationModal onClose={onClose} onCreate={vi.fn()} />);
+
+  expect(await screen.findByLabelText(/Bob Lopez/)).toBeInTheDocument();
+
+  fireEvent.keyDown(window, { key: 'Escape' });
+
   expect(onClose).toHaveBeenCalled();
 });

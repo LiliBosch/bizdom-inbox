@@ -78,7 +78,11 @@ export function ConversationItem({ conversation, isActive, onSelect }: Props) {
     >
       <span className="conversation-row">
         <strong>{conversation.subject}</strong>
-        {conversation.is_unread && <span className="unread-dot" aria-label={t('conversation.unreadAria')} />}
+        {conversation.is_unread && (
+          <span className="unread-dot" role="status" title={t('conversation.unreadAria')}>
+            <span className="sr-only">{t('conversation.unreadAria')}</span>
+          </span>
+        )}
       </span>
       <span className="conversation-meta">
         <span className={`sla-indicator sla-${slaLevel}`} aria-hidden="true" />

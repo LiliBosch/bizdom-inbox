@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { Input } from '../../../components/Input';
@@ -21,7 +21,23 @@ export function NewConversationModal({ onClose, onCreate }: Props) {
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const subjectInputRef = useRef<HTMLInputElement | null>(null);
   const canSubmit = subject.trim() !== '' && body.trim() !== '' && selectedUserIds.length > 0;
+
+  useEffect(() => {
+    subjectInputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
 
   useEffect(() => {
     if (!token) return;
@@ -81,7 +97,13 @@ export function NewConversationModal({ onClose, onCreate }: Props) {
           </Button>
         </header>
         <form className="modal-form" onSubmit={handleSubmit}>
-          <Input label={t('modal.subject')} value={subject} onChange={(event) => setSubject(event.target.value)} required />
+          <Input
+            ref={subjectInputRef}
+            label={t('modal.subject')}
+            value={subject}
+            onChange={(event) => setSubject(event.target.value)}
+            required
+          />
           <div className="field">
             <span>{t('modal.to')}</span>
             <div className="recipients-list">
@@ -96,7 +118,7 @@ export function NewConversationModal({ onClose, onCreate }: Props) {
                       checked={selectedUserIds.includes(user.id)}
                       onChange={() => toggleUserSelection(user.id)}
                     />
-                    <label htmlFor={`recipient-${user.id}`}> 
+                    <label htmlFor={`recipient-${user.id}`}>
                       <span className="recipient-name">{user.name}</span>
                       <span className="recipient-id">- ID {user.id}</span>
                     </label>
