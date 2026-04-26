@@ -1,13 +1,69 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Send } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { useLanguage } from '../../../context/LanguageContext';
 
-export function ReplyBox({ onSubmit }: { onSubmit: (body: string) => Promise<void> }) {
+function getLocalStorageItem(key: string) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function setLocalStorageItem(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // ignore
+  }
+}
+
+function removeLocalStorageItem(key: string) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // ignore
+  }
+}
+
+export function ReplyBox({
+  conversationId,
+  onSubmit,
+}: {
+  conversationId: number;
+  onSubmit: (body: string) => Promise<void>;
+}) {
   const { t } = useLanguage();
   const [body, setBody] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const draftKey = useMemo(() => `replyDraft:${conversationId}`, [conversationId]);
+
+  useEffect(() => {
+    const draft = getLocalStorageItem(draftKey);
+    setBody(draft ?? '');
+  }, [draftKey]);
+
+  useEffect(() => {
+    const trimmed = body.trim();
+    const timeout = window.setTimeout(() => {
+      if (!trimmed) {
+        removeLocalStorageItem(draftKey);
+        return;
+      }
+
+      setLocalStorageItem(draftKey, body);
+    }, 250);
+
+    return () => window.clearTimeout(timeout);
+  }, [body, draftKey]);
+
+  function clearDraft() {
+    setBody('');
+    removeLocalStorageItem(draftKey);
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -19,6 +75,7 @@ export function ReplyBox({ onSubmit }: { onSubmit: (body: string) => Promise<voi
     try {
       await onSubmit(body.trim());
       setBody('');
+      removeLocalStorageItem(draftKey);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('composer.sendError'));
     } finally {
@@ -35,10 +92,20 @@ export function ReplyBox({ onSubmit }: { onSubmit: (body: string) => Promise<voi
         rows={4}
       />
       {error && <p className="form-error">{error}</p>}
-      <Button disabled={isSending || !body.trim()} type="submit">
-        <Send size={18} aria-hidden="true" />
-        {isSending ? t('composer.sending') : t('composer.send')}
-      </Button>
+      <div className="reply-box-actions">
+        <Button
+          disabled={isSending || !body.trim()}
+          type="button"
+          variant="ghost"
+          onClick={clearDraft}
+        >
+          {t('composer.clearDraft')}
+        </Button>
+        <Button disabled={isSending || !body.trim()} type="submit">
+          <Send size={18} aria-hidden="true" />
+          {isSending ? t('composer.sending') : t('composer.send')}
+        </Button>
+      </div>
     </form>
   );
 }

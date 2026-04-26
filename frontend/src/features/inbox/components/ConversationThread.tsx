@@ -83,7 +83,7 @@ export function ConversationThread({ conversation, currentUser, onReply, onUpdat
         ))}
       </div>
 
-      <ReplyBox onSubmit={onReply} />
+      <ReplyBox conversationId={conversation.id} onSubmit={onReply} />
     </section>
   );
 }

@@ -54,6 +54,7 @@ export const translations = {
     'composer.placeholder': 'Write your reply',
     'composer.send': 'Send',
     'composer.sending': 'Sending',
+    'composer.clearDraft': 'Clear draft',
     'composer.sendError': 'Unable to send your reply.',
 
     'modal.newMessageTitle': 'New message',
@@ -124,6 +125,7 @@ export const translations = {
     'composer.placeholder': 'Escribe tu respuesta',
     'composer.send': 'Enviar',
     'composer.sending': 'Enviando',
+    'composer.clearDraft': 'Borrar borrador',
     'composer.sendError': 'No fue posible enviar la respuesta.',
 
     'modal.newMessageTitle': 'Nuevo mensaje',

@@ -20,6 +20,7 @@ Inbox style messaging module (similar to a support ticket inbox) built with Lara
   - Light/dark theme toggle with saved preference (localStorage: `bizdom_inbox_theme`)
   - Language toggle (EN/ES) for UI labels
   - Visual indicator for pending conversations (unread)
+  - Reply draft autosave per conversation (localStorage)
 
 ## Stack
 
@@ -176,6 +177,10 @@ docker compose exec frontend npm run test -- --run
   - UI language toggle (EN/ES) implemented via `LanguageContext` + `src/i18n/translations.ts`.
     - Only UI labels, placeholders, and buttons are translated.
     - Message content, subjects, and user names are not translated.
+  - ReplyBox draft autosave:
+    - Stored in `localStorage` per conversation using key `replyDraft:{conversationId}`.
+    - Draft is restored when returning to the conversation.
+    - Clear draft action removes the stored value.
 
 ## Quick checklist (what you can test)
 

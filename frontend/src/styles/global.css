@@ -754,6 +754,13 @@ textarea {
   padding: 18px 28px;
 }
 
+.reply-box-actions {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
 .reply-box .button {
   justify-self: end;
 }
