@@ -332,6 +332,14 @@ In API responses, messages include a `receipts` array with per-recipient timesta
 - It includes unread conversations so the pending indicator is visible.
 - It includes a reviewed conversation with an overdue reminder so the reminder alert can be tested during the demo.
 
+## Notes and tradeoffs
+
+- Authentication uses Laravel Sanctum Bearer tokens for a simple local API flow.
+- Read state is tracked per user through the `conversation_user.read_at` pivot.
+- Message delivery/read receipts are tracked separately through `message_user`.
+- Reminder alerts use a `conversation_reminders` table instead of only a timestamp, so the UI can show the latest reminder details.
+- Frontend tests mock the API layer to keep UI behavior tests fast and independent from backend state.
+
 ## AI collaboration
 
 - AI assistance was used while drafting parts of the demo seed data and test scaffolding.
