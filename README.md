@@ -15,6 +15,7 @@ Inbox style messaging module (similar to a support ticket inbox) built with Lara
   - Reply in an existing thread
 - Ticket workflow:
   - Conversation status: Received / Reviewed / In progress / Resolved
+  - Automatic overdue reminders for reviewed conversations that remain unresolved.
 - UI:
   - Responsive layout
   - Light/dark theme toggle with saved preference (localStorage: `bizdom_inbox_theme`)
@@ -26,6 +27,7 @@ Inbox style messaging module (similar to a support ticket inbox) built with Lara
     - Esc: clear search / close modal
     - ReplyBox: Enter to send, Shift+Enter for newline
   - SLA indicator in conversation list using `last_message_at`
+  - Reminder alert in the conversation thread when an overdue reminder exists.
 
 ## Stack
 
@@ -41,6 +43,7 @@ Inbox style messaging module (similar to a support ticket inbox) built with Lara
 - A message cannot be empty.
 - Only thread participants can reply.
 - On reply, `last_message_at` is updated.
+- Automatic reminders update `last_message_at` and `last_reminder_at`.
 - When opening a conversation, it is marked as read for the current user.
 - The unread counter is calculated per user.
 
@@ -58,7 +61,7 @@ Start everything with a single command (includes migrations and demo seed data):
 docker compose up --build
 ```
 
-### Demo in 60 seconds (recommended for evaluation)
+### Demo in 60 seconds
 
 1) Reset demo data (optional, but recommended if you ran it before):
 
@@ -88,7 +91,7 @@ password: password
 
 Notes:
 
-- This project is intended for local demo. When Docker starts, it runs migrations and seeders so an evaluator can test it immediately.
+- This project is intended for local demo. When Docker starts, it runs migrations and seeders so the app has sample data right away.
 - If the session expires (401), the frontend automatically signs out and clears state to avoid inconsistencies.
 
 Services:
@@ -158,18 +161,22 @@ VITE_API_URL=http://localhost:8000/api
 docker compose exec backend php artisan test
 ```
 
+Backend tests cover authentication, conversation creation, replies, unread state, status changes, read receipts, and overdue reminders.
+
 ### Frontend
 
 ```bash
 docker compose exec frontend npm run test -- --run
 ```
 
+Frontend tests cover the inbox list, loading and empty states, search and unread filters, new conversation creation, recipient selection, reminder alerts, and replies from the thread view.
+
 ## Seeders vs tests (why both exist)
 
-- Seeders: generate example data for demo and manual QA. In this project they are used so an evaluator can log in and see conversations/messages from the first minute.
-- Tests: automatically verify key behaviors (login, conversation creation, replies, etc.). They are objective evidence the system works and does not depend on the UI.
+- Seeders create demo data for local testing and manual QA.
+- Tests verify the main behaviors without depending on the demo data.
 
-## Technical decisions (summary)
+## Technical notes
 
 - Laravel backend:
   - Layered separation with Controller + Repository + Service.
@@ -189,6 +196,9 @@ docker compose exec frontend npm run test -- --run
   - Conversation SLA indicator:
     - Frontend-only calculation based on `last_message_at`.
     - Thresholds: ≤30 min (normal), ≤120 min (warning), >120 min (overdue).
+  - Reminder alert:
+    - Rendered when the API includes `latest_reminder`.
+    - Demo seed data includes one reviewed conversation with an overdue reminder.
   - Keyboard shortcuts:
     - Cmd or Ctrl + K focuses the search input.
     - Esc clears the search input (or closes the new conversation modal when open).
@@ -201,6 +211,7 @@ docker compose exec frontend npm run test -- --run
 - Search by subject or participant.
 - Filter unread and see the counter.
 - Open a conversation (should be marked as read).
+- Confirm that a conversation with an overdue reminder shows a reminder alert.
 - Create a new conversation with multiple recipients.
 - Reply in a thread.
 
@@ -264,7 +275,8 @@ The following transitions are automatic:
   - `status` is set to `received`
   - `status_received_at` is set
 
-- When a participant opens the conversation thread (GET `/api/conversations/{conversation}`):- the conversation is marked as read for that participant (`conversation_user.read_at`)
+- When a participant opens the conversation thread (GET `/api/conversations/{conversation}`):
+  - the conversation is marked as read for that participant (`conversation_user.read_at`)
   - if the conversation was `received`, it transitions to `reviewed` (Opened) and sets `status_reviewed_at`
 
 Manual transitions:
@@ -281,6 +293,22 @@ Timestamps stored on `conversations`:
 
 The UI shows the timestamp for the current and latest status only.
 
+## Overdue reminders
+
+The backend includes a scheduled command that creates automatic reminders for reviewed conversations that have stayed open for more than 24 hours without being resolved.
+
+```bash
+php artisan conversations:send-overdue-reminders
+```
+
+The scheduler runs this command hourly. When a reminder is sent:
+
+- A message is added to the conversation.
+- A row is stored in `conversation_reminders`.
+- `last_message_at` and `last_reminder_at` are updated.
+- The API exposes the latest reminder as `latest_reminder`.
+- The frontend shows a reminder alert in the conversation thread.
+
 ## Message delivery + read receipts
 
 In addition to the ticket workflow, the system tracks delivery and read receipts for each message so the sender can see when a recipient received or opened a message.
@@ -296,7 +324,10 @@ In API responses, messages include a `receipts` array with per-recipient timesta
 
 - The project includes seeders to populate the database with conversations and messages.
 - It includes unread conversations so the pending indicator is visible.
+- It includes a reviewed conversation with an overdue reminder so the reminder alert can be tested during the demo.
 
 ## AI collaboration
 
-- Some test and demo data scaffolding (seeders) was produced with the assistance of an AI coding assistant, then reviewed and adjusted to match the project requirements.
+- AI assistance was used while drafting parts of the demo seed data and test scaffolding.
+- Tests and review notes were checked before being committed.
+- The README was also cleaned up so the project setup, demo flow, and feature notes are easier to follow.
