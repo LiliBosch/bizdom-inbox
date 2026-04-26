@@ -65,8 +65,7 @@ export function ReplyBox({
     removeLocalStorageItem(draftKey);
   }
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
+  async function sendReply() {
     if (!body.trim()) return;
 
     setIsSending(true);
@@ -83,11 +82,35 @@ export function ReplyBox({
     }
   }
 
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    await sendReply();
+  }
+
   return (
     <form className="reply-box" onSubmit={handleSubmit}>
       <textarea
         value={body}
         onChange={(event) => setBody(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.nativeEvent.isComposing) return;
+          if (isSending) return;
+
+          const isMac = navigator.platform.toLowerCase().includes('mac');
+          const isModKey = isMac ? event.metaKey : event.ctrlKey;
+
+          const isEnter = event.key === 'Enter';
+          const isShiftEnter = isEnter && event.shiftKey;
+          const isModEnter = isEnter && isModKey;
+
+          if (isShiftEnter) return;
+
+          if (isModEnter || isEnter) {
+            event.preventDefault();
+            void sendReply();
+            return;
+          }
+        }}
         placeholder={t('composer.placeholder')}
         rows={4}
       />

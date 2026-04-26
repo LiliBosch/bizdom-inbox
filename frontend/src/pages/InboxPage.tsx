@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LogOut, MailPlus, Moon, Search, Sun } from 'lucide-react';
 import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
@@ -18,6 +18,42 @@ export function InboxPage({ theme, onToggleTheme }: InboxPageProps) {
   const { language, toggleLanguage, t } = useLanguage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const inbox = useConversations(token);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      const isEditableTarget =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        (target ? target.isContentEditable : false);
+
+      const isMac = navigator.platform.toLowerCase().includes('mac');
+      const isModKey = isMac ? event.metaKey : event.ctrlKey;
+      const key = event.key.toLowerCase();
+      const isCommandK = isModKey && key === 'k';
+
+      if (isCommandK && !isEditableTarget) {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        if (isModalOpen) {
+          setIsModalOpen(false);
+          return;
+        }
+
+        if (inbox.search.trim()) {
+          inbox.setSearch('');
+        }
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [inbox, inbox.search, isModalOpen]);
 
   if (!user) return null;
 
@@ -33,6 +69,7 @@ export function InboxPage({ theme, onToggleTheme }: InboxPageProps) {
           <Search size={18} aria-hidden="true" />
           <input
             id="search"
+            ref={searchInputRef}
             value={inbox.search}
             onChange={(event) => inbox.setSearch(event.target.value)}
             placeholder={t('inbox.searchPlaceholder')}

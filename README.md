@@ -21,6 +21,10 @@ Inbox style messaging module (similar to a support ticket inbox) built with Lara
   - Language toggle (EN/ES) for UI labels
   - Visual indicator for pending conversations (unread)
   - Reply draft autosave per conversation (localStorage)
+  - Keyboard shortcuts:
+    - Cmd/Ctrl + K: focus search
+    - Esc: clear search / close modal
+    - ReplyBox: Enter to send, Shift+Enter for newline
 
 ## Stack
 
@@ -181,6 +185,10 @@ docker compose exec frontend npm run test -- --run
     - Stored in `localStorage` per conversation using key `replyDraft:{conversationId}`.
     - Draft is restored when returning to the conversation.
     - Clear draft action removes the stored value.
+  - Keyboard shortcuts:
+    - Cmd/Ctrl + K focuses the search input.
+    - Esc clears the search input (or closes the new conversation modal when open).
+    - ReplyBox uses Enter-to-send and Shift+Enter for newline.
 
 ## Quick checklist (what you can test)
 
