@@ -21,6 +21,7 @@ export function NewConversationModal({ onClose, onCreate }: Props) {
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const canSubmit = subject.trim() !== '' && body.trim() !== '' && selectedUserIds.length > 0;
 
   useEffect(() => {
     if (!token) return;
@@ -50,8 +51,8 @@ export function NewConversationModal({ onClose, onCreate }: Props) {
 
     try {
       await onCreate({
-        subject,
-        body,
+        subject: subject.trim(),
+        body: body.trim(),
         participant_ids: selectedUserIds,
       });
       onClose();
@@ -126,7 +127,7 @@ export function NewConversationModal({ onClose, onCreate }: Props) {
             <Button type="button" variant="ghost" onClick={onClose}>
               {t('modal.cancel')}
             </Button>
-            <Button type="submit" disabled={isSaving}>
+            <Button type="submit" disabled={isSaving || !canSubmit}>
               {isSaving ? t('modal.sending') : t('modal.send')}
             </Button>
           </div>
