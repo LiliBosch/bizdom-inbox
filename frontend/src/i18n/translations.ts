@@ -73,6 +73,8 @@ export const translations = {
 
     'conversation.noMessagesYet': 'No messages yet',
     'conversation.unreadAria': 'Unread',
+    'conversation.lastMessage': 'Last message: {time}',
+    'conversation.lastMessageUnknown': 'Last message: not available',
   },
   es: {
     'common.language': 'Idioma',
@@ -144,6 +146,8 @@ export const translations = {
 
     'conversation.noMessagesYet': 'Sin mensajes todavia',
     'conversation.unreadAria': 'No leido',
+    'conversation.lastMessage': 'Ultimo mensaje: {time}',
+    'conversation.lastMessageUnknown': 'Ultimo mensaje: no disponible',
   },
 } as const satisfies Record<Language, Translations>;
 

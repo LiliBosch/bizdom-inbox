@@ -25,6 +25,7 @@ Inbox style messaging module (similar to a support ticket inbox) built with Lara
     - Cmd/Ctrl + K: focus search
     - Esc: clear search / close modal
     - ReplyBox: Enter to send, Shift+Enter for newline
+  - SLA indicator in conversation list using `last_message_at`
 
 ## Stack
 
@@ -185,16 +186,19 @@ docker compose exec frontend npm run test -- --run
     - Stored in `localStorage` per conversation using key `replyDraft:{conversationId}`.
     - Draft is restored when returning to the conversation.
     - Clear draft action removes the stored value.
+  - Conversation SLA indicator:
+    - Frontend-only calculation based on `last_message_at`.
+    - Thresholds: ≤30 min (normal), ≤120 min (warning), >120 min (overdue).
   - Keyboard shortcuts:
-    - Cmd/Ctrl + K focuses the search input.
+    - Cmd or Ctrl + K focuses the search input.
     - Esc clears the search input (or closes the new conversation modal when open).
-    - ReplyBox uses Enter-to-send and Shift+Enter for newline.
+    - ReplyBox uses Enter to send and Shift+Enter for newline.
 
 ## Quick checklist (what you can test)
 
 - Login with the demo user.
 - List conversations.
-- Search by subject/participant.
+- Search by subject or participant.
 - Filter unread and see the counter.
 - Open a conversation (should be marked as read).
 - Create a new conversation with multiple recipients.
