@@ -622,6 +622,12 @@ textarea {
   gap: 8px;
 }
 
+.conversation-reminder-meta {
+  color: var(--brand-orange);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
 .sla-indicator {
   border-radius: 999px;
   height: 10px;
@@ -685,6 +691,23 @@ textarea {
 .thread-header p {
   color: var(--muted);
   margin: 0;
+}
+
+.thread-reminder-alert {
+  align-items: center;
+  background: rgba(242, 155, 34, 0.14);
+  border: 1px solid rgba(242, 155, 34, 0.42);
+  border-radius: 8px;
+  color: var(--brand-orange);
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 10px 14px;
+}
+
+.thread-reminder-alert strong {
+  font-size: 0.85rem;
+  text-transform: uppercase;
 }
 
 .thread-header-row {

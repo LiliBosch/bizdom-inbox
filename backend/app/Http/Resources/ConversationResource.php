@@ -18,6 +18,15 @@ class ConversationResource extends JsonResource
             'status_in_progress_at' => $this->status_in_progress_at?->toISOString(),
             'status_resolved_at' => $this->status_resolved_at?->toISOString(),
             'last_message_at' => $this->last_message_at?->toISOString(),
+            'last_reminder_at' => $this->last_reminder_at?->toISOString(),
+            'latest_reminder' => $this->whenLoaded('latestReminder', function () {
+                return [
+                    'id' => $this->latestReminder->id,
+                    'type' => $this->latestReminder->type,
+                    'sent_at' => $this->latestReminder->sent_at?->toISOString(),
+                    'sent_by' => $this->latestReminder->sender?->only(['id', 'name', 'email']),
+                ];
+            }),
             'is_unread' => $this->pivot ? $this->pivot->read_at === null : false,
             'participants' => UserResource::collection($this->whenLoaded('participants')),
             'messages' => MessageResource::collection($this->whenLoaded('messages')),

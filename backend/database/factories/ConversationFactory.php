@@ -18,6 +18,7 @@ class ConversationFactory extends Factory
             'status_received_at' => now(),
             'created_by' => User::factory(),
             'last_message_at' => now(),
+            'last_reminder_at' => null,
         ];
     }
 }

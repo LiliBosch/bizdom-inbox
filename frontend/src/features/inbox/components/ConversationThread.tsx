@@ -37,6 +37,17 @@ export function ConversationThread({ conversation, currentUser, onReply, onUpdat
             </select>
           </label>
         </div>
+        {conversation.latest_reminder?.sent_at && (
+          <div className="thread-reminder-alert" role="status">
+            <strong>{t('conversation.reminderBadge')}</strong>
+            <span>
+              {t('conversation.reminderSent', {
+                time: new Date(conversation.latest_reminder.sent_at).toLocaleString(),
+              })}
+              {conversation.latest_reminder.type === 'auto_overdue' && ` - ${t('conversation.reminderAutomatic')}`}
+            </span>
+          </div>
+        )}
         <div className="thread-status-timestamps">
           {(() => {
             const timestamp =

@@ -13,7 +13,11 @@ class ConversationRepository
         $unreadOnly = in_array($filters['unread'] ?? null, [true, 'true', 1, '1'], true);
 
         return $user->conversations()
-            ->with(['participants', 'messages' => fn ($query) => $query->latest()->limit(1)])
+            ->with([
+                'participants',
+                'messages' => fn ($query) => $query->latest()->limit(1),
+                'latestReminder.sender',
+            ])
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(function ($inner) use ($search) {
                     $inner->where('subject', 'like', "%{$search}%")
@@ -33,7 +37,7 @@ class ConversationRepository
     {
         return $user->conversations()
             ->where('conversations.id', $conversation->id)
-            ->with(['participants', 'messages.sender', 'messages.recipients'])
+            ->with(['participants', 'messages.sender', 'messages.recipients', 'latestReminder.sender'])
             ->firstOrFail();
     }
 

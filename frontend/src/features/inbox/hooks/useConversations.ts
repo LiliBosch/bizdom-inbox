@@ -68,7 +68,17 @@ export function useConversations(token: string | null) {
       const response = await conversationsApi.getConversation(token, conversationId);
       setSelectedConversation(response.data);
       setConversations((items) =>
-        items.map((item) => (item.id === conversationId ? { ...item, is_unread: false } : item)),
+        items.map((item) =>
+          item.id === conversationId
+            ? {
+                ...item,
+                is_unread: false,
+                last_message_at: response.data.last_message_at,
+                last_reminder_at: response.data.last_reminder_at,
+                latest_reminder: response.data.latest_reminder,
+              }
+            : item,
+        ),
       );
       await loadUnreadCount();
     } catch (err) {
@@ -83,6 +93,8 @@ export function useConversations(token: string | null) {
       ...selectedConversation,
       messages: [...(selectedConversation.messages ?? []), response.data],
       last_message_at: response.data.created_at,
+      last_reminder_at: null,
+      latest_reminder: null,
     });
     await loadConversations(1, 'replace');
     await loadUnreadCount();
@@ -101,8 +113,30 @@ export function useConversations(token: string | null) {
     const response = await conversationsApi.updateConversationStatus(token, conversationId, status);
     const updated = response.data;
 
-    setConversations((items) => items.map((item) => (item.id === conversationId ? { ...item, status: updated.status } : item)));
-    setSelectedConversation((current) => (current?.id === conversationId ? { ...current, status: updated.status } : current));
+    setConversations((items) =>
+      items.map((item) =>
+        item.id === conversationId
+          ? {
+              ...item,
+              status: updated.status,
+              last_message_at: updated.last_message_at,
+              last_reminder_at: updated.last_reminder_at,
+              latest_reminder: updated.latest_reminder,
+            }
+          : item,
+      ),
+    );
+    setSelectedConversation((current) =>
+      current?.id === conversationId
+        ? {
+            ...current,
+            status: updated.status,
+            last_message_at: updated.last_message_at,
+            last_reminder_at: updated.last_reminder_at,
+            latest_reminder: updated.latest_reminder,
+          }
+        : current,
+    );
   }
 
   useEffect(() => {

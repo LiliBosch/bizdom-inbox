@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Conversation;
+use App\Models\ConversationReminder;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -10,8 +11,11 @@ use Illuminate\Support\Facades\DB;
 class ConversationService
 {
     public const STATUS_RECEIVED = 'received';
+
     public const STATUS_REVIEWED = 'reviewed';
+
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_RESOLVED = 'resolved';
 
     public const STATUSES = [
@@ -20,6 +24,8 @@ class ConversationService
         self::STATUS_IN_PROGRESS,
         self::STATUS_RESOLVED,
     ];
+
+    public const REMINDER_TYPE_AUTO_OVERDUE = 'auto_overdue';
 
     public function createConversation(User $sender, array $data): Conversation
     {
@@ -36,6 +42,7 @@ class ConversationService
                 'status_received_at' => now(),
                 'created_by' => $sender->id,
                 'last_message_at' => now(),
+                'last_reminder_at' => null,
             ]);
 
             $conversation->participants()->syncWithPivotValues($participantIds, [
@@ -63,7 +70,7 @@ class ConversationService
                 ]);
             }
 
-            return $conversation->load(['participants', 'messages.sender', 'messages.recipients']);
+            return $conversation->load(['participants', 'messages.sender', 'messages.recipients', 'latestReminder.sender']);
         });
     }
 
@@ -87,7 +94,7 @@ class ConversationService
 
         $conversation->save();
 
-        return $conversation;
+        return $conversation->loadMissing(['latestReminder.sender']);
     }
 
     public function addReply(Conversation $conversation, User $sender, string $body): Message
@@ -116,7 +123,10 @@ class ConversationService
                 ]);
             }
 
-            $conversation->forceFill(['last_message_at' => now()])->save();
+            $conversation->forceFill([
+                'last_message_at' => now(),
+                'last_reminder_at' => null,
+            ])->save();
 
             $conversation->participants()
                 ->where('users.id', '!=', $sender->id)
@@ -130,6 +140,64 @@ class ConversationService
             ]);
 
             return $message->load(['sender', 'recipients']);
+        });
+    }
+
+    public function sendReminder(
+        Conversation $conversation,
+        User $sender,
+        string $type = self::REMINDER_TYPE_AUTO_OVERDUE,
+        ?string $body = null,
+    ): ConversationReminder {
+        return DB::transaction(function () use ($conversation, $sender, $type, $body) {
+            abort_unless(
+                $conversation->participants()->where('users.id', $sender->id)->exists(),
+                403,
+                'You are not allowed to send reminders in this conversation.',
+            );
+
+            $now = now();
+            $messageBody = $body ?? 'Recordatorio automático: esta conversación lleva más de 24 horas abierta sin resolverse.';
+
+            $message = $conversation->messages()->create([
+                'sender_id' => $sender->id,
+                'body' => $messageBody,
+            ]);
+
+            $recipientIds = $conversation->participants()
+                ->where('users.id', '!=', $sender->id)
+                ->pluck('users.id')
+                ->all();
+
+            if (count($recipientIds) > 0) {
+                $message->recipients()->syncWithPivotValues($recipientIds, [
+                    'delivered_at' => $now,
+                    'read_at' => null,
+                ]);
+            }
+
+            $conversation->forceFill([
+                'last_message_at' => $now,
+                'last_reminder_at' => $now,
+            ])->save();
+
+            $conversation->participants()
+                ->where('users.id', '!=', $sender->id)
+                ->pluck('users.id')
+                ->each(fn (int $participantId) => $conversation->participants()->updateExistingPivot($participantId, [
+                    'read_at' => null,
+                ]));
+
+            $conversation->participants()->updateExistingPivot($sender->id, [
+                'read_at' => $now,
+            ]);
+
+            return $conversation->reminders()->create([
+                'message_id' => $message->id,
+                'sent_by' => $sender->id,
+                'type' => $type,
+                'sent_at' => $now,
+            ])->load('sender');
         });
     }
 

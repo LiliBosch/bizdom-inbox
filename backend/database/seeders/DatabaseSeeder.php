@@ -5,9 +5,10 @@ namespace Database\Seeders;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
+use App\Services\ConversationService;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -30,7 +31,6 @@ class DatabaseSeeder extends Seeder
         ));
 
         $users->take(4)->each(function (User $participant, int $index) use ($ana, $users) {
-            // For the group chat (index 2), include multiple participants
             if ($index === 2) {
                 $conversation = Conversation::factory()->create([
                     'subject' => 'Chat grupal operativo - Equipo de Soporte',
@@ -40,15 +40,14 @@ class DatabaseSeeder extends Seeder
                     'status_in_progress_at' => now()->subMinutes(45),
                     'created_by' => $ana->id,
                     'last_message_at' => now()->subMinutes(32),
+                    'last_reminder_at' => null,
                 ]);
 
-                // Include Ana and 3 more participants (real group chat)
                 $groupParticipants = $users->take(3)->pluck('id')->push($ana->id);
                 $conversation->participants()->syncWithPivotValues($groupParticipants, [
                     'read_at' => null,
                 ]);
 
-                // Ana marks her participation as read
                 $conversation->participants()->updateExistingPivot($ana->id, [
                     'read_at' => now(),
                 ]);
@@ -75,10 +74,11 @@ class DatabaseSeeder extends Seeder
                 $this->seedReceiptsForMessage($conversation, $m2);
                 $this->seedReceiptsForMessage($conversation, $m3);
             } else {
-                // Regular one-to-one conversations
                 $subjects = ['Seguimiento de ticket fiscal', 'Revision de acceso', 'Duda sobre factura'];
 
                 $status = $index === 0 ? 'received' : ($index === 1 ? 'reviewed' : 'resolved');
+                $lastReminderAt = $status === 'reviewed' ? now()->subMinutes(5) : null;
+
                 $conversation = Conversation::factory()->create([
                     'subject' => $subjects[$index] ?? 'Otra consulta',
                     'status' => $status,
@@ -91,6 +91,7 @@ class DatabaseSeeder extends Seeder
                         : null,
                     'created_by' => $ana->id,
                     'last_message_at' => now()->subMinutes($index * 16),
+                    'last_reminder_at' => $lastReminderAt,
                 ]);
 
                 $conversation->participants()->sync([
@@ -116,6 +117,25 @@ class DatabaseSeeder extends Seeder
 
                 $this->seedReceiptsForMessage($conversation, $m1);
                 $this->seedReceiptsForMessage($conversation, $m2);
+
+                if ($lastReminderAt !== null) {
+                    $reminderMessage = Message::factory()->create([
+                        'conversation_id' => $conversation->id,
+                        'sender_id' => $ana->id,
+                        'body' => 'Recordatorio automático: esta conversación lleva más de 24 horas abierta sin resolverse.',
+                        'created_at' => $lastReminderAt,
+                        'updated_at' => $lastReminderAt,
+                    ]);
+
+                    $this->seedReceiptsForMessage($conversation, $reminderMessage);
+
+                    $conversation->reminders()->create([
+                        'message_id' => $reminderMessage->id,
+                        'sent_by' => $ana->id,
+                        'type' => ConversationService::REMINDER_TYPE_AUTO_OVERDUE,
+                        'sent_at' => $lastReminderAt,
+                    ]);
+                }
             }
         });
     }

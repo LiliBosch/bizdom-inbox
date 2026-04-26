@@ -51,6 +51,7 @@ export function ConversationItem({ conversation, isActive, onSelect }: Props) {
 
   let slaLevel: SlaLevel = 'normal';
   let slaLabel = t('conversation.lastMessageUnknown');
+  let reminderLabel: string | null = null;
 
   if (conversation.last_message_at) {
     const lastMessageDate = new Date(conversation.last_message_at);
@@ -58,6 +59,13 @@ export function ConversationItem({ conversation, isActive, onSelect }: Props) {
       slaLevel = getSlaLevel(lastMessageDate);
       const relative = formatRelativeTime(lastMessageDate, language);
       slaLabel = t('conversation.lastMessage', { time: relative });
+    }
+  }
+
+  if (conversation.latest_reminder?.sent_at) {
+    const reminderDate = new Date(conversation.latest_reminder.sent_at);
+    if (!Number.isNaN(reminderDate.getTime())) {
+      reminderLabel = `${t('conversation.reminderBadge')}: ${t('conversation.reminderSent', { time: formatRelativeTime(reminderDate, language) })}`;
     }
   }
 
@@ -76,6 +84,7 @@ export function ConversationItem({ conversation, isActive, onSelect }: Props) {
         <span className={`sla-indicator sla-${slaLevel}`} aria-hidden="true" />
         <span className="sla-text">{slaLabel}</span>
       </span>
+      {reminderLabel && <span className="conversation-reminder-meta">{reminderLabel}</span>}
       <span className="conversation-preview">{lastMessage}</span>
     </button>
   );

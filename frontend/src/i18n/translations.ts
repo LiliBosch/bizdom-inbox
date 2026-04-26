@@ -75,6 +75,10 @@ export const translations = {
     'conversation.unreadAria': 'Unread',
     'conversation.lastMessage': 'Last message: {time}',
     'conversation.lastMessageUnknown': 'Last message: not available',
+    'conversation.reminderSent': 'Reminder sent {time}',
+    'conversation.reminderBadge': 'Reminder',
+    'conversation.reminderAutomatic': 'Automatic reminder sent by the system',
+
   },
   es: {
     'common.language': 'Idioma',
@@ -148,6 +152,9 @@ export const translations = {
     'conversation.unreadAria': 'No leido',
     'conversation.lastMessage': 'Ultimo mensaje: {time}',
     'conversation.lastMessageUnknown': 'Ultimo mensaje: no disponible',
+    'conversation.reminderSent': 'Recordatorio enviado {time}',
+    'conversation.reminderBadge': 'Recordatorio',
+    'conversation.reminderAutomatic': 'Recordatorio automático enviado por el sistema',
   },
 } as const satisfies Record<Language, Translations>;
 

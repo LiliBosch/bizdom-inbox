@@ -20,6 +20,13 @@ export type Message = {
   created_at: string;
 };
 
+export type ConversationReminder = {
+  id: number;
+  type: string;
+  sent_at: string | null;
+  sent_by?: User | null;
+};
+
 export type Conversation = {
   id: number;
   subject: string;
@@ -29,9 +36,11 @@ export type Conversation = {
   status_in_progress_at?: string | null;
   status_resolved_at?: string | null;
   last_message_at: string | null;
+  last_reminder_at?: string | null;
   is_unread: boolean;
   participants: User[];
   messages?: Message[];
+  latest_reminder?: ConversationReminder | null;
   created_at: string;
 };
 
