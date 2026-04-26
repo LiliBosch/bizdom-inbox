@@ -13,9 +13,12 @@ Inbox style messaging module (similar to a support ticket inbox) built with Lara
 - Messages:
   - Create a conversation with the first message
   - Reply in an existing thread
+- Ticket workflow:
+  - Conversation status: Received / Reviewed / In progress / Resolved
 - UI:
   - Responsive layout
   - Light/dark theme toggle with saved preference (localStorage: `bizdom_inbox_theme`)
+  - Language toggle (EN/ES) for UI labels
   - Visual indicator for pending conversations (unread)
 
 ## Stack
@@ -171,7 +174,7 @@ docker compose exec frontend npm run test -- --run
   - `useConversations` hook for state, data fetching, and pagination.
   - Global handling of `401 Unauthorized` to automatically sign out.
   - UI language toggle (EN/ES) implemented via `LanguageContext` + `src/i18n/translations.ts`.
-    - Only UI labels/placeholders/buttons are translated.
+    - Only UI labels, placeholders, and buttons are translated.
     - Message content, subjects, and user names are not translated.
 
 ## Quick checklist (what you can test)
@@ -201,12 +204,37 @@ GET    /api/users
 GET    /api/conversations
 POST   /api/conversations
 GET    /api/conversations/{conversation}
+PATCH  /api/conversations/{conversation}/status
 POST   /api/conversations/{conversation}/messages
 
 GET    /api/notifications/unread-count
+```
+
+## Ticket Status Workflow
+
+The ticket status workflow feature allows users to update the status of a conversation. The available statuses are: Received, Reviewed, In Progress, and Resolved.
+
+### API Endpoint
+
+To update the status of a conversation, use the following API endpoint:
+
+```txt
+PATCH  /api/conversations/{conversation}/status
+```
+
+This endpoint expects a JSON payload with the new status:
+
+```json
+{
+  "status": "in_progress"
+}
 ```
 
 ## Demo data
 
 - The project includes seeders to populate the database with conversations and messages.
 - It includes unread conversations so the pending indicator is visible.
+
+## AI collaboration
+
+- Some test and demo data scaffolding (seeders) was produced with the assistance of an AI coding assistant, then reviewed and adjusted to match the project requirements.

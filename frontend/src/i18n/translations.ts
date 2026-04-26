@@ -37,6 +37,12 @@ export const translations = {
     'thread.subjectLabel': 'Message subject',
     'thread.recipientsLabel': 'Recipients',
 
+    'ticketStatus.received': 'Received',
+    'ticketStatus.reviewed': 'Reviewed',
+    'ticketStatus.inProgress': 'In progress',
+    'ticketStatus.resolved': 'Resolved',
+    'ticketStatus.label': 'Ticket status',
+
     'composer.placeholder': 'Write your reply',
     'composer.send': 'Send',
     'composer.sending': 'Sending',
@@ -92,6 +98,12 @@ export const translations = {
     'thread.aria': 'Area de lectura y redaccion',
     'thread.subjectLabel': 'Asunto del mensaje',
     'thread.recipientsLabel': 'Destinatarios',
+
+    'ticketStatus.received': 'Recibido',
+    'ticketStatus.reviewed': 'Revisado',
+    'ticketStatus.inProgress': 'En progreso',
+    'ticketStatus.resolved': 'Resuelto',
+    'ticketStatus.label': 'Estado del ticket',
 
     'composer.placeholder': 'Escribe tu respuesta',
     'composer.send': 'Enviar',

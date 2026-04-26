@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as conversationsApi from '../../../api/conversationsApi';
-import type { Conversation } from '../types';
+import type { Conversation, TicketStatus } from '../types';
 
 export function useConversations(token: string | null) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -96,6 +96,15 @@ export function useConversations(token: string | null) {
     await loadUnreadCount();
   }
 
+  async function updateConversationStatus(conversationId: number, status: TicketStatus) {
+    if (!token) return;
+    const response = await conversationsApi.updateConversationStatus(token, conversationId, status);
+    const updated = response.data;
+
+    setConversations((items) => items.map((item) => (item.id === conversationId ? { ...item, status: updated.status } : item)));
+    setSelectedConversation((current) => (current?.id === conversationId ? { ...current, status: updated.status } : current));
+  }
+
   useEffect(() => {
     setPage(1);
     setLastPage(1);
@@ -118,5 +127,6 @@ export function useConversations(token: string | null) {
     openConversation,
     sendReply,
     createConversation,
+    updateConversationStatus,
   };
 }

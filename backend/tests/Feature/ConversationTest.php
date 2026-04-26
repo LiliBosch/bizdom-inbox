@@ -75,10 +75,12 @@ class ConversationTest extends TestCase
         $response->assertJsonFragment([
             'id' => $unreadConversation->id,
             'is_unread' => true,
+            'status' => $unreadConversation->status,
         ]);
         $response->assertJsonFragment([
             'id' => $readConversation->id,
             'is_unread' => false,
+            'status' => $readConversation->status,
         ]);
 
         $unreadOnlyResponse = $this->getJson('/api/conversations?unread=true&per_page=10');
@@ -89,5 +91,32 @@ class ConversationTest extends TestCase
         ]);
         $unreadOnlyResponse->assertJsonCount(1, 'data');
         $unreadOnlyResponse->assertJsonPath('data.0.id', $unreadConversation->id);
+    }
+
+    public function test_participant_can_update_conversation_status(): void
+    {
+        $user = User::factory()->create();
+        $participant = User::factory()->create();
+        $conversation = Conversation::factory()->create([
+            'created_by' => $user->id,
+            'status' => 'received',
+        ]);
+        $conversation->participants()->sync([$user->id, $participant->id]);
+
+        Sanctum::actingAs($participant);
+
+        $response = $this->patchJson("/api/conversations/{$conversation->id}/status", [
+            'status' => 'resolved',
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'id' => $conversation->id,
+            'status' => 'resolved',
+        ]);
+        $this->assertDatabaseHas('conversations', [
+            'id' => $conversation->id,
+            'status' => 'resolved',
+        ]);
     }
 }

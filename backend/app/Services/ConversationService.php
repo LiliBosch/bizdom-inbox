@@ -9,6 +9,18 @@ use Illuminate\Support\Facades\DB;
 
 class ConversationService
 {
+    public const STATUS_RECEIVED = 'received';
+    public const STATUS_REVIEWED = 'reviewed';
+    public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_RESOLVED = 'resolved';
+
+    public const STATUSES = [
+        self::STATUS_RECEIVED,
+        self::STATUS_REVIEWED,
+        self::STATUS_IN_PROGRESS,
+        self::STATUS_RESOLVED,
+    ];
+
     public function createConversation(User $sender, array $data): Conversation
     {
         return DB::transaction(function () use ($sender, $data) {
@@ -20,6 +32,7 @@ class ConversationService
 
             $conversation = Conversation::create([
                 'subject' => $data['subject'],
+                'status' => self::STATUS_RECEIVED,
                 'created_by' => $sender->id,
                 'last_message_at' => now(),
             ]);
@@ -39,6 +52,19 @@ class ConversationService
 
             return $conversation->load(['participants', 'messages.sender']);
         });
+    }
+
+    public function updateStatus(Conversation $conversation, User $actor, string $status): Conversation
+    {
+        abort_unless(
+            $conversation->participants()->where('users.id', $actor->id)->exists(),
+            403,
+            'You are not allowed to update this conversation.'
+        );
+
+        $conversation->forceFill(['status' => $status])->save();
+
+        return $conversation;
     }
 
     public function addReply(Conversation $conversation, User $sender, string $body): Message

@@ -1,5 +1,5 @@
 import { http } from './http';
-import type { Conversation, Message, PaginatedResponse } from '../features/inbox/types';
+import type { Conversation, Message, PaginatedResponse, TicketStatus } from '../features/inbox/types';
 
 export function getConversations(
   token: string,
@@ -41,4 +41,12 @@ export function replyToConversation(token: string, conversationId: number, body:
 
 export function getUnreadCount(token: string) {
   return http<{ unread_count: number }>('/notifications/unread-count', { token });
+}
+
+export function updateConversationStatus(token: string, conversationId: number, status: TicketStatus) {
+  return http<{ data: Conversation }>(`/conversations/${conversationId}/status`, {
+    method: 'PATCH',
+    token,
+    body: JSON.stringify({ status }),
+  });
 }

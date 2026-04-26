@@ -12,6 +12,7 @@ class ConversationResource extends JsonResource
         return [
             'id' => $this->id,
             'subject' => $this->subject,
+            'status' => $this->status,
             'last_message_at' => $this->last_message_at?->toISOString(),
             'is_unread' => $this->pivot ? $this->pivot->read_at === null : false,
             'participants' => UserResource::collection($this->whenLoaded('participants')),

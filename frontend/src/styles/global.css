@@ -452,7 +452,7 @@ textarea {
   border-bottom: 1px solid var(--line);
   display: grid;
   gap: 14px;
-  grid-template-columns: auto minmax(220px, 1fr) auto auto auto auto;
+  grid-template-columns: auto minmax(220px, 1fr) auto auto auto auto auto;
   padding: 16px 22px;
 }
 
@@ -468,6 +468,7 @@ textarea {
   border-radius: 8px;
   display: flex;
   gap: 10px;
+  min-width: 0;
   padding: 12px;
   width: 100%;
 }
@@ -639,14 +640,14 @@ textarea {
   background: var(--surface);
 }
 
-.thread-header span {
+.thread-header > span {
   color: #000000;
   font-size: 0.85rem;
   font-weight: 800;
   text-transform: uppercase;
 }
 
-:root.theme-dark .thread-header span {
+:root.theme-dark .thread-header > span {
   color: var(--text);
 }
 
@@ -658,6 +659,46 @@ textarea {
 .thread-header p {
   color: var(--muted);
   margin: 0;
+}
+
+.thread-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.thread-status select {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 8px 10px;
+}
+
+:root.theme-dark .thread-status select {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--line);
+  color: var(--text);
+}
+
+.ticket-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+:root.theme-dark .ticket-status {
+  background: rgba(231, 238, 246, 0.08);
+  border-color: rgba(231, 238, 246, 0.12);
 }
 
 .messages {

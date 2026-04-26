@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Http\Requests;
+
+use App\Services\ConversationService;
+use Illuminate\Foundation\Http\FormRequest;
+
+class UpdateConversationStatusRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'status' => ['required', 'string', 'in:'.implode(',', ConversationService::STATUSES)],
+        ];
+    }
+}

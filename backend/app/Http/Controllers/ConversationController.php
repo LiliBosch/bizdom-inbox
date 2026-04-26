@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreConversationRequest;
+use App\Http\Requests\UpdateConversationStatusRequest;
 use App\Http\Resources\ConversationResource;
 use App\Models\Conversation;
 use App\Repositories\ConversationRepository;
@@ -51,5 +52,13 @@ class ConversationController extends Controller
         return response()->json([
             'unread_count' => $this->repository->unreadCountForUser($request->user()),
         ]);
+    }
+
+    public function updateStatus(UpdateConversationStatusRequest $request, Conversation $conversation): ConversationResource
+    {
+        $conversation = $this->repository->findForUser($request->user(), $conversation);
+        $conversation = $this->service->updateStatus($conversation, $request->user(), $request->validated('status'));
+
+        return new ConversationResource($conversation->loadMissing(['participants']));
     }
 }

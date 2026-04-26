@@ -4,6 +4,8 @@ export type User = {
   email: string;
 };
 
+export type TicketStatus = 'received' | 'reviewed' | 'in_progress' | 'resolved';
+
 export type Message = {
   id: number;
   body: string;
@@ -14,6 +16,7 @@ export type Message = {
 export type Conversation = {
   id: number;
   subject: string;
+  status: TicketStatus;
   last_message_at: string | null;
   is_unread: boolean;
   participants: User[];

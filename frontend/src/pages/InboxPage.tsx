@@ -109,7 +109,12 @@ export function InboxPage({ theme, onToggleTheme }: InboxPageProps) {
             onLoadMore={inbox.loadMoreConversations}
           />
         </aside>
-        <ConversationThread conversation={inbox.selectedConversation} currentUser={user} onReply={inbox.sendReply} />
+        <ConversationThread
+          conversation={inbox.selectedConversation}
+          currentUser={user}
+          onReply={inbox.sendReply}
+          onUpdateStatus={inbox.updateConversationStatus}
+        />
       </div>
 
       {isModalOpen && (

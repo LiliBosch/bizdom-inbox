@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             if ($index === 2) {
                 $conversation = Conversation::factory()->create([
                     'subject' => 'Chat grupal operativo - Equipo de Soporte',
+                    'status' => 'in_progress',
                     'created_by' => $ana->id,
                     'last_message_at' => now()->subMinutes(32),
                 ]);
@@ -70,6 +71,7 @@ class DatabaseSeeder extends Seeder
                 $subjects = ['Seguimiento de ticket fiscal', 'Revision de acceso', 'Duda sobre factura'];
                 $conversation = Conversation::factory()->create([
                     'subject' => $subjects[$index] ?? 'Otra consulta',
+                    'status' => $index === 0 ? 'received' : ($index === 1 ? 'reviewed' : 'resolved'),
                     'created_by' => $ana->id,
                     'last_message_at' => now()->subMinutes($index * 16),
                 ]);

@@ -17,6 +17,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/conversations', [ConversationController::class, 'index']);
     Route::post('/conversations', [ConversationController::class, 'store']);
     Route::get('/conversations/{conversation}', [ConversationController::class, 'show']);
+    Route::patch('/conversations/{conversation}/status', [ConversationController::class, 'updateStatus']);
     Route::post('/conversations/{conversation}/messages', [MessageController::class, 'store']);
 
     Route::get('/notifications/unread-count', [ConversationController::class, 'unreadCount']);
