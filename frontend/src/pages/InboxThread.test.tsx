@@ -20,8 +20,18 @@ test('envia una respuesta y actualiza el hilo visible', async () => {
     id: 101,
     body: 'Nueva respuesta',
     sender: currentUser,
+    attachments: [
+      {
+        id: 1,
+        original_name: 'evidencia.pdf',
+        mime_type: 'application/pdf',
+        size: 1200,
+        url: 'http://localhost:8000/api/messages/101/attachments/1',
+      },
+    ],
     created_at: '2026-04-26T10:20:00.000Z',
   });
+  const attachment = new File(['contenido'], 'evidencia.pdf', { type: 'application/pdf' });
 
   conversationsApiMock.getConversations.mockResolvedValue(paginatedConversations([conversation]));
   conversationsApiMock.getUnreadCount.mockResolvedValue({ unread_count: 0 });
@@ -37,6 +47,12 @@ test('envia una respuesta y actualiza el hilo visible', async () => {
   fireEvent.change(screen.getByPlaceholderText('Write your reply'), {
     target: { value: ' Nueva respuesta ' },
   });
+  fireEvent.change(screen.getByLabelText('Attach files'), {
+    target: { files: [attachment] },
+  });
+
+  expect(screen.getByText('evidencia.pdf')).toBeInTheDocument();
+
   fireEvent.click(screen.getByRole('button', { name: /Send$/ }));
 
   await waitFor(() => {
@@ -44,8 +60,10 @@ test('envia una respuesta y actualiza el hilo visible', async () => {
       'test-token',
       10,
       'Nueva respuesta',
+      [attachment],
     );
   });
 
   expect(await screen.findByText('Nueva respuesta')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /evidencia.pdf/ })).toBeInTheDocument();
 });

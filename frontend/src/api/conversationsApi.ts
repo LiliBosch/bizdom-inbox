@@ -31,7 +31,21 @@ export function createConversation(token: string, payload: {
   });
 }
 
-export function replyToConversation(token: string, conversationId: number, body: string) {
+export function replyToConversation(token: string, conversationId: number, body: string, attachments: File[] = []) {
+  if (attachments.length > 0) {
+    const formData = new FormData();
+    if (body.trim()) {
+      formData.append('body', body);
+    }
+    attachments.forEach((attachment) => formData.append('attachments[]', attachment));
+
+    return http<{ data: Message }>(`/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      token,
+      body: formData,
+    });
+  }
+
   return http<{ data: Message }>(`/conversations/${conversationId}/messages`, {
     method: 'POST',
     token,
@@ -49,4 +63,25 @@ export function updateConversationStatus(token: string, conversationId: number, 
     token,
     body: JSON.stringify({ status }),
   });
+}
+
+export async function downloadAttachment(token: string, url: string) {
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'application/octet-stream',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem('bizdom_inbox_token');
+    localStorage.removeItem('bizdom_inbox_user');
+    window.dispatchEvent(new CustomEvent('bizdom:unauthorized'));
+  }
+
+  if (!response.ok) {
+    throw new Error(response.status === 401 ? 'Session expired. Please sign in again.' : 'Unable to download attachment.');
+  }
+
+  return response.blob();
 }

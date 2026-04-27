@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Message extends Model
 {
@@ -31,5 +32,10 @@ class Message extends Model
         return $this->belongsToMany(User::class)
             ->withPivot(['delivered_at', 'read_at'])
             ->withTimestamps();
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(MessageAttachment::class);
     }
 }

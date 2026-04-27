@@ -5,6 +5,7 @@ export const conversationsApiMock = {
   getConversation: vi.fn(),
   createConversation: vi.fn(),
   replyToConversation: vi.fn(),
+  downloadAttachment: vi.fn(),
   getUnreadCount: vi.fn(),
   updateConversationStatus: vi.fn(),
 };

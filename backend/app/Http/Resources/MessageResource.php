@@ -14,6 +14,18 @@ class MessageResource extends JsonResource
             'id' => $this->id,
             'body' => $this->body,
             'sender' => new UserResource($this->whenLoaded('sender')),
+            'attachments' => $this->whenLoaded('attachments', function () {
+                return $this->attachments->map(fn ($attachment) => [
+                    'id' => $attachment->id,
+                    'original_name' => $attachment->original_name,
+                    'mime_type' => $attachment->mime_type,
+                    'size' => $attachment->size,
+                    'url' => route('messages.attachments.show', [
+                        'message' => $this->id,
+                        'attachment' => $attachment->id,
+                    ]),
+                ])->values();
+            }),
             'receipts' => $this->whenLoaded('recipients', function () {
                 return $this->recipients->map(fn ($user) => [
                     'user' => new UserResource($user),

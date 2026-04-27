@@ -6,6 +6,7 @@ use App\Models\Conversation;
 use App\Models\ConversationReminder;
 use App\Models\Message;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 class ConversationService
@@ -70,7 +71,7 @@ class ConversationService
                 ]);
             }
 
-            return $conversation->load(['participants', 'messages.sender', 'messages.recipients', 'latestReminder.sender']);
+            return $conversation->load(['participants', 'messages.sender', 'messages.recipients', 'messages.attachments', 'latestReminder.sender']);
         });
     }
 
@@ -97,9 +98,9 @@ class ConversationService
         return $conversation->loadMissing(['latestReminder.sender']);
     }
 
-    public function addReply(Conversation $conversation, User $sender, string $body): Message
+    public function addReply(Conversation $conversation, User $sender, ?string $body, array $attachments = []): Message
     {
-        return DB::transaction(function () use ($conversation, $sender, $body) {
+        return DB::transaction(function () use ($conversation, $sender, $body, $attachments) {
             abort_unless(
                 $conversation->participants()->where('users.id', $sender->id)->exists(),
                 403,
@@ -108,8 +109,21 @@ class ConversationService
 
             $message = $conversation->messages()->create([
                 'sender_id' => $sender->id,
-                'body' => $body,
+                'body' => $body ?? '',
             ]);
+
+            foreach ($attachments as $attachment) {
+                if (! $attachment instanceof UploadedFile) {
+                    continue;
+                }
+
+                $message->attachments()->create([
+                    'original_name' => $attachment->getClientOriginalName(),
+                    'path' => $attachment->store('conversation-attachments', 'local'),
+                    'mime_type' => $attachment->getClientMimeType(),
+                    'size' => $attachment->getSize(),
+                ]);
+            }
 
             $recipientIds = $conversation->participants()
                 ->where('users.id', '!=', $sender->id)
@@ -139,7 +153,7 @@ class ConversationService
                 'read_at' => now(),
             ]);
 
-            return $message->load(['sender', 'recipients']);
+            return $message->load(['sender', 'recipients', 'attachments']);
         });
     }
 

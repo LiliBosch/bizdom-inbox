@@ -1,5 +1,5 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { Send } from 'lucide-react';
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { Paperclip, Send, X } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { useLanguage } from '../../../context/LanguageContext';
 
@@ -32,14 +32,17 @@ export function ReplyBox({
   onSubmit,
 }: {
   conversationId: number;
-  onSubmit: (body: string) => Promise<void>;
+  onSubmit: (body: string, attachments?: File[]) => Promise<void>;
 }) {
   const { t } = useLanguage();
   const [body, setBody] = useState('');
+  const [attachments, setAttachments] = useState<File[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const draftKey = useMemo(() => `replyDraft:${conversationId}`, [conversationId]);
+  const canSubmit = body.trim() !== '' || attachments.length > 0;
 
   useEffect(() => {
     const draft = getLocalStorageItem(draftKey);
@@ -62,18 +65,36 @@ export function ReplyBox({
 
   function clearDraft() {
     setBody('');
+    setAttachments([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     removeLocalStorageItem(draftKey);
   }
 
+  function handleAttachmentChange(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    setAttachments((current) => [...current, ...files].slice(0, 5));
+    event.target.value = '';
+  }
+
+  function removeAttachment(index: number) {
+    setAttachments((current) => current.filter((_, currentIndex) => currentIndex !== index));
+  }
+
   async function sendReply() {
-    if (!body.trim()) return;
+    if (!canSubmit) return;
 
     setIsSending(true);
     setError(null);
 
     try {
-      await onSubmit(body.trim());
+      await onSubmit(body.trim(), attachments);
       setBody('');
+      setAttachments([]);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       removeLocalStorageItem(draftKey);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('composer.sendError'));
@@ -114,17 +135,53 @@ export function ReplyBox({
         placeholder={t('composer.placeholder')}
         rows={4}
       />
+      <div className="reply-attachments">
+        <input
+          ref={fileInputRef}
+          id={`reply-attachments-${conversationId}`}
+          type="file"
+          multiple
+          accept=".pdf,.jpg,.jpeg,.png,.txt,.csv,.doc,.docx,.xls,.xlsx"
+          onChange={handleAttachmentChange}
+          aria-label={t('composer.attachFiles')}
+        />
+        <Button
+          disabled={isSending || attachments.length >= 5}
+          type="button"
+          variant="ghost"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Paperclip size={18} aria-hidden="true" />
+          {t('composer.attach')}
+        </Button>
+        {attachments.length > 0 && (
+          <ul className="attachment-list" aria-label={t('composer.selectedAttachments')}>
+            {attachments.map((attachment, index) => (
+              <li key={`${attachment.name}-${attachment.size}-${index}`}>
+                <span>{attachment.name}</span>
+                <button
+                  type="button"
+                  onClick={() => removeAttachment(index)}
+                  aria-label={t('composer.removeAttachment', { name: attachment.name })}
+                >
+                  <X size={14} aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       {error && <p className="form-error">{error}</p>}
       <div className="reply-box-actions">
         <Button
-          disabled={isSending || !body.trim()}
+          disabled={isSending || !canSubmit}
           type="button"
           variant="ghost"
           onClick={clearDraft}
         >
           {t('composer.clearDraft')}
         </Button>
-        <Button disabled={isSending || !body.trim()} type="submit">
+        <Button disabled={isSending || !canSubmit} type="submit">
           <Send size={18} aria-hidden="true" />
           {isSending ? t('composer.sending') : t('composer.send')}
         </Button>

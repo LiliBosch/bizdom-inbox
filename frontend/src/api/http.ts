@@ -8,7 +8,7 @@ export async function http<T>(path: string, options: RequestOptions = {}): Promi
   const headers = new Headers(options.headers);
   headers.set('Accept', 'application/json');
 
-  if (options.body) {
+  if (options.body && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
 

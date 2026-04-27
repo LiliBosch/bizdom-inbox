@@ -86,9 +86,9 @@ export function useConversations(token: string | null) {
     }
   }
 
-  async function sendReply(body: string) {
+  async function sendReply(body: string, attachments: File[] = []) {
     if (!token || !selectedConversation) return;
-    const response = await conversationsApi.replyToConversation(token, selectedConversation.id, body);
+    const response = await conversationsApi.replyToConversation(token, selectedConversation.id, body, attachments);
     setSelectedConversation({
       ...selectedConversation,
       messages: [...(selectedConversation.messages ?? []), response.data],

@@ -84,7 +84,7 @@ Creates a thread with its first message.
 
 Returns thread details and messages. Also marks the conversation as read for the current user.
 
-If the conversation has a reminder, the response includes `latest_reminder`. Messages include delivery/read receipts when loaded.
+If the conversation has a reminder, the response includes `latest_reminder`. Messages include delivery/read receipts and attachments when loaded.
 
 ## PATCH /api/conversations/{conversation}/status
 
@@ -130,7 +130,40 @@ Adds a reply to the thread.
 }
 ```
 
-Only participants can reply. A message body is required.
+To send files, use `multipart/form-data`:
+
+```txt
+body=I am attaching the evidence.
+attachments[]=evidence.pdf
+```
+
+Rules:
+
+- Only participants can reply.
+- A reply needs either a `body` or at least one attachment.
+- Maximum 5 attachments per reply.
+- Maximum file size: 5 MB each.
+- Allowed file types: pdf, jpg, jpeg, png, txt, csv, doc, docx, xls, xlsx.
+
+Message responses include attachments:
+
+```json
+{
+  "attachments": [
+    {
+      "id": 1,
+      "original_name": "evidence.pdf",
+      "mime_type": "application/pdf",
+      "size": 122880,
+      "url": "http://localhost:8000/api/messages/10/attachments/1"
+    }
+  ]
+}
+```
+
+## GET /api/messages/{message}/attachments/{attachment}
+
+Downloads an attachment. Requires the same JWT Bearer token and only works for participants of the conversation.
 
 ## GET /api/notifications/unread-count
 

@@ -13,6 +13,7 @@ Inbox style messaging module (similar to a support ticket inbox) built with Lara
 - Messages:
   - Create a conversation with the first message
   - Reply in an existing thread
+  - Attach files to replies
 - Ticket workflow:
   - Conversation status: Received / Reviewed / In progress / Resolved
   - Automatic overdue reminders for reviewed conversations that remain unresolved.
@@ -41,7 +42,8 @@ Inbox style messaging module (similar to a support ticket inbox) built with Lara
 
 - Only authenticated users can access conversations.
 - A conversation requires a subject, an initial body, and at least one participant.
-- A message cannot be empty.
+- A message cannot be empty unless it includes at least one attachment.
+- Reply attachments are limited to 5 files, 5 MB each, with common document/image formats allowed.
 - Only thread participants can reply.
 - On reply, `last_message_at` is updated.
 - Automatic reminders update `last_message_at` and `last_reminder_at`.
@@ -164,7 +166,7 @@ VITE_API_URL=http://localhost:8000/api
 docker compose exec backend php artisan test
 ```
 
-Backend tests cover authentication, conversation creation, replies, unread state, status changes, read receipts, and overdue reminders.
+Backend tests cover authentication, conversation creation, replies, attachment upload/download authorization, unread state, status changes, read receipts, and overdue reminders.
 
 ### Frontend
 
@@ -172,7 +174,7 @@ Backend tests cover authentication, conversation creation, replies, unread state
 docker compose exec frontend npm run test -- --run
 ```
 
-Frontend tests cover the inbox list, loading and empty states, search and unread filters, new conversation creation, recipient selection, reminder alerts, and replies from the thread view.
+Frontend tests cover the inbox list, loading and empty states, search and unread filters, new conversation creation, recipient selection, reminder alerts, attachments, and replies from the thread view.
 
 ## Seeders vs tests (why both exist)
 
@@ -196,6 +198,9 @@ Frontend tests cover the inbox list, loading and empty states, search and unread
     - Stored in `localStorage` per conversation using key `replyDraft:{conversationId}`.
     - Draft is restored when returning to the conversation.
     - Clear draft action removes the stored value.
+  - Reply attachments:
+    - Uploaded as `multipart/form-data`.
+    - Stored outside the public web root and downloaded through an authenticated API route.
   - Conversation SLA indicator:
     - Frontend-only calculation based on `last_message_at`.
     - Thresholds: ≤30 min (normal), ≤120 min (warning), >120 min (overdue).
@@ -222,6 +227,7 @@ Frontend tests cover the inbox list, loading and empty states, search and unread
 - Confirm that a conversation with an overdue reminder shows a reminder alert.
 - Create a new conversation with multiple recipients.
 - Reply in a thread.
+- Attach a file to a reply and confirm it appears below the sent message.
 
 ## API (main endpoints)
 

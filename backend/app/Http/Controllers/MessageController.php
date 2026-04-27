@@ -17,6 +17,7 @@ class MessageController extends Controller
             $conversation,
             $request->user(),
             $request->validated('body'),
+            $request->file('attachments', []),
         );
 
         return new MessageResource($message);

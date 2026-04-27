@@ -6,6 +6,8 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ConversationTest extends TestCase
@@ -43,6 +45,62 @@ class ConversationTest extends TestCase
 
         $response->assertCreated();
         $this->assertDatabaseHas('messages', ['body' => 'Confirmo la recepcion.']);
+    }
+
+    public function test_participant_can_reply_with_attachment(): void
+    {
+        Storage::fake('local');
+
+        $sender = User::factory()->create();
+        $participant = User::factory()->create();
+        $conversation = Conversation::factory()->create(['created_by' => $sender->id]);
+        $conversation->participants()->sync([$sender->id, $participant->id]);
+        $this->actingAsJwt($participant);
+
+        $response = $this->post("/api/conversations/{$conversation->id}/messages", [
+            'body' => 'Adjunto evidencia.',
+            'attachments' => [
+                UploadedFile::fake()->create('evidencia.pdf', 120, 'application/pdf'),
+            ],
+        ], ['Accept' => 'application/json']);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.attachments.0.original_name', 'evidencia.pdf');
+
+        $this->assertDatabaseHas('message_attachments', ['original_name' => 'evidencia.pdf']);
+        $attachmentPath = Message::latest()->first()->attachments()->first()->path;
+        Storage::disk('local')->assertExists($attachmentPath);
+    }
+
+    public function test_attachment_download_is_limited_to_conversation_participants(): void
+    {
+        Storage::fake('local');
+
+        $sender = User::factory()->create();
+        $participant = User::factory()->create();
+        $outsider = User::factory()->create();
+        $conversation = Conversation::factory()->create(['created_by' => $sender->id]);
+        $conversation->participants()->sync([$sender->id, $participant->id]);
+        $message = Message::factory()->create([
+            'conversation_id' => $conversation->id,
+            'sender_id' => $sender->id,
+            'body' => 'Adjunto evidencia.',
+        ]);
+        Storage::disk('local')->put('conversation-attachments/evidencia.pdf', 'contenido');
+        $attachment = $message->attachments()->create([
+            'original_name' => 'evidencia.pdf',
+            'path' => 'conversation-attachments/evidencia.pdf',
+            'mime_type' => 'application/pdf',
+            'size' => 9,
+        ]);
+
+        $this->actingAsJwt($outsider)
+            ->get("/api/messages/{$message->id}/attachments/{$attachment->id}")
+            ->assertForbidden();
+
+        $this->actingAsJwt($participant)
+            ->get("/api/messages/{$message->id}/attachments/{$attachment->id}")
+            ->assertOk();
     }
 
     public function test_non_participant_cannot_read_conversation(): void

@@ -12,10 +12,19 @@ export type MessageReceipt = {
   read_at: string | null;
 };
 
+export type MessageAttachment = {
+  id: number;
+  original_name: string;
+  mime_type: string | null;
+  size: number;
+  url: string;
+};
+
 export type Message = {
   id: number;
   body: string;
   sender: User;
+  attachments?: MessageAttachment[];
   receipts?: MessageReceipt[];
   created_at: string;
 };
