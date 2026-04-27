@@ -41,7 +41,8 @@ body {
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
 }
 
@@ -80,6 +81,7 @@ textarea {
 .button:focus-visible,
 .conversation-item:focus-visible,
 .thread-status select:focus-visible,
+.reply-attachments input:focus-visible + .button,
 .toggle input:focus-visible,
 .recipient-checkbox input:focus-visible {
   outline: 3px solid rgba(0, 113, 227, 0.42);
@@ -647,6 +649,9 @@ textarea {
   color: var(--brand-orange);
   font-size: 0.78rem;
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sla-indicator {
@@ -693,29 +698,92 @@ textarea {
   background: var(--surface);
 }
 
-.thread-header > span {
+.thread-title-block {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.thread-subject-label {
   color: #000000;
   font-size: 0.85rem;
   font-weight: 800;
   text-transform: uppercase;
 }
 
-:root.theme-dark .thread-header > span {
+:root.theme-dark .thread-subject-label {
   color: var(--text);
 }
 
 .thread-header h1 {
-  font-size: 1.7rem;
-  margin: 8px 0;
-}
-
-.thread-header p {
-  color: var(--muted);
+  font-size: 2rem;
+  line-height: 1.15;
   margin: 0;
 }
 
-.thread-reminder-alert {
+.thread-mail-meta {
   align-items: center;
+  display: flex;
+  gap: 12px;
+  margin-top: 2px;
+  min-width: 0;
+}
+
+.thread-avatar {
+  align-items: center;
+  background: #dce8ff;
+  border-radius: 999px;
+  color: #1c56b3;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.86rem;
+  font-weight: 800;
+  height: 42px;
+  justify-content: center;
+  width: 42px;
+}
+
+:root.theme-dark .thread-avatar {
+  background: rgba(94, 156, 255, 0.24);
+  color: #b9d4ff;
+}
+
+.thread-mail-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.thread-mail-copy strong {
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.thread-mail-copy span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.thread-mail-date {
+  color: var(--muted);
+  flex: 0 0 auto;
+  font-size: 0.9rem;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .thread-mail-meta {
+    align-items: flex-start;
+  }
+
+  .thread-mail-date {
+    margin-left: 0;
+    white-space: normal;
+  }
+}
+
+.thread-reminder-alert {
   background: rgba(242, 155, 34, 0.14);
   border: 1px solid rgba(242, 155, 34, 0.42);
   border-radius: 8px;
@@ -726,9 +794,27 @@ textarea {
   padding: 10px 14px;
 }
 
+.thread-reminder-alert-header {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .thread-reminder-alert strong {
   font-size: 0.85rem;
   text-transform: uppercase;
+}
+
+.thread-reminder-alert p {
+  color: #8c4d00;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+:root.theme-dark .thread-reminder-alert p {
+  color: #ffb454;
 }
 
 .thread-header-row {
@@ -816,12 +902,109 @@ textarea {
   margin: 10px 0 0;
 }
 
+.message-attachments {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.message-attachments button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--brand-blue);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.9rem;
+  font-weight: 700;
+  gap: 6px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.message-attachments button:focus-visible {
+  border-radius: 6px;
+  outline: 3px solid rgba(0, 113, 227, 0.42);
+  outline-offset: 3px;
+}
+
+.message-download-error {
+  color: var(--danger);
+  font-size: 0.86rem;
+}
+
 .reply-box {
   background: var(--surface);
   border-top: 1px solid var(--line);
   display: grid;
   gap: 10px;
   padding: 18px 28px;
+}
+
+.reply-attachments {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.reply-attachments input[type="file"] {
+  height: 1px;
+  opacity: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.attachment-list {
+  display: flex;
+  flex: 1 1 260px;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+}
+
+.attachment-list li {
+  align-items: center;
+  background: rgba(0, 113, 227, 0.08);
+  border: 1px solid rgba(0, 113, 227, 0.18);
+  border-radius: 8px;
+  display: inline-flex;
+  gap: 6px;
+  max-width: 260px;
+  min-height: 34px;
+  padding: 6px 8px;
+}
+
+.attachment-list span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-list button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 24px;
+  justify-content: center;
+  padding: 0;
+  width: 24px;
+}
+
+.attachment-list button:focus-visible {
+  border-radius: 6px;
+  outline: 3px solid rgba(0, 113, 227, 0.42);
+  outline-offset: 2px;
 }
 
 .reply-box-actions {

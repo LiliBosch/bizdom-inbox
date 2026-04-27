@@ -35,7 +35,8 @@ export const translations = {
     'thread.selectTitle': 'Select a conversation',
     'thread.aria': 'Reading and writing area',
     'thread.subjectLabel': 'Message subject',
-    'thread.recipientsLabel': 'Recipients',
+    'thread.toLabel': 'To',
+    'thread.me': 'me',
 
     'ticketStatus.received': 'Received',
     'ticketStatus.reviewed': 'Opened',
@@ -56,6 +57,10 @@ export const translations = {
     'composer.sending': 'Sending',
     'composer.clearDraft': 'Clear draft',
     'composer.sendError': 'Unable to send your reply.',
+    'composer.attach': 'Attach',
+    'composer.attachFiles': 'Attach files',
+    'composer.selectedAttachments': 'Selected attachments',
+    'composer.removeAttachment': 'Remove {name}',
 
     'modal.newMessageTitle': 'New message',
     'modal.close': 'Close modal',
@@ -78,6 +83,8 @@ export const translations = {
     'conversation.reminderSent': 'Reminder sent {time}',
     'conversation.reminderBadge': 'Reminder',
     'conversation.reminderAutomatic': 'Automatic reminder sent by the system',
+    'conversation.reminderReason': 'This conversation has been open for more than 24 hours without being resolved.',
+    'conversation.reminderListSummary': 'Needs attention: open for more than 24 hours.',
 
   },
   es: {
@@ -112,7 +119,8 @@ export const translations = {
     'thread.selectTitle': 'Selecciona una conversacion',
     'thread.aria': 'Area de lectura y redaccion',
     'thread.subjectLabel': 'Asunto del mensaje',
-    'thread.recipientsLabel': 'Destinatarios',
+    'thread.toLabel': 'Para',
+    'thread.me': 'mi',
 
     'ticketStatus.received': 'Recibido',
     'ticketStatus.reviewed': 'Abierto',
@@ -133,6 +141,10 @@ export const translations = {
     'composer.sending': 'Enviando',
     'composer.clearDraft': 'Borrar borrador',
     'composer.sendError': 'No fue posible enviar la respuesta.',
+    'composer.attach': 'Adjuntar',
+    'composer.attachFiles': 'Adjuntar archivos',
+    'composer.selectedAttachments': 'Archivos seleccionados',
+    'composer.removeAttachment': 'Quitar {name}',
 
     'modal.newMessageTitle': 'Nuevo mensaje',
     'modal.close': 'Cerrar modal',
@@ -155,6 +167,8 @@ export const translations = {
     'conversation.reminderSent': 'Recordatorio enviado {time}',
     'conversation.reminderBadge': 'Recordatorio',
     'conversation.reminderAutomatic': 'Recordatorio automático enviado por el sistema',
+    'conversation.reminderReason': 'Esta conversacion lleva mas de 24 horas abierta sin resolverse.',
+    'conversation.reminderListSummary': 'Requiere atencion: abierta por mas de 24 horas.',
   },
 } as const satisfies Record<Language, Translations>;
 

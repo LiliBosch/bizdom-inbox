@@ -8,7 +8,7 @@ import { TicketStatusBadge } from './TicketStatusBadge';
 type Props = {
   conversation: Conversation | null;
   currentUser: User;
-  onReply: (body: string) => Promise<void>;
+  onReply: (body: string, attachments?: File[]) => Promise<void>;
   onUpdateStatus: (conversationId: number, status: TicketStatus) => Promise<void>;
 };
 
@@ -18,6 +18,37 @@ export function ConversationThread({ conversation, currentUser, onReply, onUpdat
   if (!conversation) {
     return <EmptyState title={t('thread.selectTitle')} text="" />;
   }
+
+  const fallbackSender = conversation.participants.find((participant) => participant.id !== currentUser.id) ?? currentUser;
+  const sender = conversation.messages?.[0]?.sender ?? fallbackSender;
+  const recipientNames = conversation.participants
+    .filter((participant) => participant.id !== sender.id)
+    .map((participant) => (participant.id === currentUser.id ? t('thread.me') : participant.name))
+    .join(', ');
+  const avatarName = sender.name;
+  const avatarInitials = avatarName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+  const statusTimestamp =
+    conversation.status === 'resolved'
+      ? conversation.status_resolved_at
+      : conversation.status === 'in_progress'
+        ? conversation.status_in_progress_at
+        : conversation.status === 'reviewed'
+          ? conversation.status_reviewed_at
+          : conversation.status_received_at;
+  const statusLabel =
+    conversation.status === 'resolved'
+      ? t('ticketStatus.resolvedAt')
+      : conversation.status === 'in_progress'
+        ? t('ticketStatus.inProgressAt')
+        : conversation.status === 'reviewed'
+          ? t('ticketStatus.reviewedAt')
+          : t('ticketStatus.receivedAt');
 
   return (
     <section className="thread" aria-label={t('thread.aria')}>
@@ -39,53 +70,41 @@ export function ConversationThread({ conversation, currentUser, onReply, onUpdat
         </div>
         {conversation.latest_reminder?.sent_at && (
           <div className="thread-reminder-alert" role="status">
-            <strong>{t('conversation.reminderBadge')}</strong>
-            <span>
-              {t('conversation.reminderSent', {
-                time: new Date(conversation.latest_reminder.sent_at).toLocaleString(),
-              })}
-              {conversation.latest_reminder.type === 'auto_overdue' && ` - ${t('conversation.reminderAutomatic')}`}
-            </span>
+            <div className="thread-reminder-alert-header">
+              <strong>{t('conversation.reminderBadge')}</strong>
+              <span>
+                {t('conversation.reminderSent', {
+                  time: new Date(conversation.latest_reminder.sent_at).toLocaleString(),
+                })}
+              </span>
+            </div>
+            {conversation.latest_reminder.type === 'auto_overdue' && (
+              <p>
+                {t('conversation.reminderAutomatic')}. {t('conversation.reminderReason')}
+              </p>
+            )}
           </div>
         )}
-        <div className="thread-status-timestamps">
-          {(() => {
-            const timestamp =
-              conversation.status === 'resolved'
-                ? conversation.status_resolved_at
-                : conversation.status === 'in_progress'
-                  ? conversation.status_in_progress_at
-                  : conversation.status === 'reviewed'
-                    ? conversation.status_reviewed_at
-                    : conversation.status_received_at;
-
-            if (!timestamp) return null;
-
-            const label =
-              conversation.status === 'resolved'
-                ? t('ticketStatus.resolvedAt')
-                : conversation.status === 'in_progress'
-                  ? t('ticketStatus.inProgressAt')
-                  : conversation.status === 'reviewed'
-                    ? t('ticketStatus.reviewedAt')
-                    : t('ticketStatus.receivedAt');
-
-            return (
+        <div className="thread-title-block">
+          <span className="thread-subject-label">{t('thread.subjectLabel')}</span>
+          <h1>{conversation.subject}</h1>
+          <div className="thread-mail-meta">
+            <span className="thread-avatar" aria-hidden="true">
+              {avatarInitials}
+            </span>
+            <div className="thread-mail-copy">
+              <strong>{sender.name}</strong>
               <span>
-                {label} {new Date(timestamp).toLocaleString()}
+                {t('thread.toLabel')}: {recipientNames}
               </span>
-            );
-          })()}
+            </div>
+            {statusTimestamp && (
+              <time className="thread-mail-date" dateTime={statusTimestamp}>
+                {statusLabel} {new Date(statusTimestamp).toLocaleString()}
+              </time>
+            )}
+          </div>
         </div>
-        <span>{t('thread.subjectLabel')}</span>
-        <h1>{conversation.subject}</h1>
-        <p>
-          {t('thread.recipientsLabel')}: 
-          {conversation.participants
-            .filter((participant) => participant.id !== currentUser.id)
-            .map((participant) => participant.name)
-            .join(', ')}
-        </p>
       </header>
 
       <div className="messages">

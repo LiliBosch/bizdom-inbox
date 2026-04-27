@@ -30,15 +30,26 @@ class DatabaseSeeder extends Seeder
             ['name' => $data['name'], 'password' => Hash::make('password')],
         ));
 
+        DB::table('message_user')->delete();
+        DB::table('conversation_reminders')->delete();
+        DB::table('messages')->delete();
+        DB::table('conversation_user')->delete();
+        DB::table('conversations')->delete();
+
         $users->take(4)->each(function (User $participant, int $index) use ($ana, $users) {
             if ($index === 2) {
+                $conversationStarter = $users->get(0);
+                $openedAt = now()->subMinutes(60);
+                $reviewedAt = now()->subMinutes(55);
+                $inProgressAt = now()->subMinutes(45);
+
                 $conversation = Conversation::factory()->create([
                     'subject' => 'Chat grupal operativo - Equipo de Soporte',
                     'status' => 'in_progress',
-                    'status_received_at' => now()->subMinutes(60),
-                    'status_reviewed_at' => now()->subMinutes(55),
-                    'status_in_progress_at' => now()->subMinutes(45),
-                    'created_by' => $ana->id,
+                    'status_received_at' => $openedAt,
+                    'status_reviewed_at' => $reviewedAt,
+                    'status_in_progress_at' => $inProgressAt,
+                    'created_by' => $conversationStarter->id,
                     'last_message_at' => now()->subMinutes(32),
                     'last_reminder_at' => null,
                 ]);
@@ -54,20 +65,26 @@ class DatabaseSeeder extends Seeder
 
                 $m1 = Message::factory()->create([
                     'conversation_id' => $conversation->id,
-                    'sender_id' => $ana->id,
+                    'sender_id' => $conversationStarter->id,
                     'body' => 'Hola equipo, necesitamos coordinar el seguimiento de los tickets pendientes.',
+                    'created_at' => now()->subMinutes(58),
+                    'updated_at' => now()->subMinutes(58),
                 ]);
 
                 $m2 = Message::factory()->create([
                     'conversation_id' => $conversation->id,
-                    'sender_id' => $users->get(0)->id,
+                    'sender_id' => $ana->id,
                     'body' => 'Yo tengo 3 tickets en progreso, puedo tomar 2 más.',
+                    'created_at' => now()->subMinutes(45),
+                    'updated_at' => now()->subMinutes(45),
                 ]);
 
                 $m3 = Message::factory()->create([
                     'conversation_id' => $conversation->id,
                     'sender_id' => $users->get(1)->id,
                     'body' => 'Perfecto, yo me encargo de los casos críticos. Actualizo en 1 hora.',
+                    'created_at' => now()->subMinutes(32),
+                    'updated_at' => now()->subMinutes(32),
                 ]);
 
                 $this->seedReceiptsForMessage($conversation, $m1);
@@ -78,18 +95,25 @@ class DatabaseSeeder extends Seeder
 
                 $status = $index === 0 ? 'received' : ($index === 1 ? 'reviewed' : 'resolved');
                 $lastReminderAt = $status === 'reviewed' ? now()->subMinutes(5) : null;
+                $conversationStarter = $index === 0 || $index === 1 ? $participant : $ana;
+                $replySender = $conversationStarter->is($ana) ? $participant : $ana;
+                $openedAt = now()->subMinutes($index * 18 + 40);
+                $reviewedAt = $status === 'reviewed' || $status === 'resolved'
+                    ? now()->subMinutes($index * 18 + 30)
+                    : null;
+                $resolvedAt = $status === 'resolved'
+                    ? now()->subMinutes($index * 18 + 10)
+                    : null;
+                $firstMessageAt = $openedAt->copy()->addMinutes(2);
+                $replyMessageAt = $openedAt->copy()->addMinutes(12);
 
                 $conversation = Conversation::factory()->create([
                     'subject' => $subjects[$index] ?? 'Otra consulta',
                     'status' => $status,
-                    'status_received_at' => now()->subMinutes($index * 18 + 40),
-                    'status_reviewed_at' => $status === 'reviewed' || $status === 'resolved'
-                        ? now()->subMinutes($index * 18 + 30)
-                        : null,
-                    'status_resolved_at' => $status === 'resolved'
-                        ? now()->subMinutes($index * 18 + 10)
-                        : null,
-                    'created_by' => $ana->id,
+                    'status_received_at' => $openedAt,
+                    'status_reviewed_at' => $reviewedAt,
+                    'status_resolved_at' => $resolvedAt,
+                    'created_by' => $conversationStarter->id,
                     'last_message_at' => now()->subMinutes($index * 16),
                     'last_reminder_at' => $lastReminderAt,
                 ]);
@@ -101,18 +125,22 @@ class DatabaseSeeder extends Seeder
 
                 $m1 = Message::factory()->create([
                     'conversation_id' => $conversation->id,
-                    'sender_id' => $ana->id,
+                    'sender_id' => $conversationStarter->id,
                     'body' => $status === 'resolved'
                         ? 'Hola, cierro este ticket ya que el caso quedó resuelto. Quedo atenta si surge algo más.'
                         : 'Hola, comparto el contexto inicial para dar seguimiento a este asunto.',
+                    'created_at' => $firstMessageAt,
+                    'updated_at' => $firstMessageAt,
                 ]);
 
                 $m2 = Message::factory()->create([
                     'conversation_id' => $conversation->id,
-                    'sender_id' => $participant->id,
+                    'sender_id' => $replySender->id,
                     'body' => $status === 'resolved'
                         ? 'Confirmado. Caso resuelto y documentado. Gracias.'
                         : 'Recibido, reviso la informacion y te respondo con los siguientes pasos.',
+                    'created_at' => $replyMessageAt,
+                    'updated_at' => $replyMessageAt,
                 ]);
 
                 $this->seedReceiptsForMessage($conversation, $m1);

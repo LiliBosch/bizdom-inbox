@@ -4,7 +4,8 @@ import { ConversationList } from './ConversationList';
 import { LanguageProvider } from '../../../context/LanguageContext';
 import { ConversationThread } from './ConversationThread';
 import type { Conversation, User } from '../types';
-import { makeConversation } from '../../../test/factories';
+import { bobUser, carlaUser, currentUser as factoryCurrentUser, makeConversation } from '../../../test/factories';
+import { renderWithProviders } from '../../../test/render';
 
 test('muestra estado vacio cuando no hay conversaciones', () => {
   render(
@@ -80,17 +81,32 @@ test('muestra alerta de recordatorio cuando la conversacion trae latest_reminder
     created_at: '2026-04-26T10:00:00.000Z',
   };
 
-  render(
-    <LanguageProvider>
-      <ConversationThread
-        conversation={conversation}
-        currentUser={currentUser}
-        onReply={() => Promise.resolve()}
-        onUpdateStatus={() => Promise.resolve()}
-      />
-    </LanguageProvider>,
+  renderWithProviders(
+    <ConversationThread
+      conversation={conversation}
+      currentUser={currentUser}
+      onReply={() => Promise.resolve()}
+      onUpdateStatus={() => Promise.resolve()}
+    />,
   );
 
   expect(screen.getByRole('status')).toHaveTextContent('Reminder');
   expect(screen.getByRole('status')).toHaveTextContent('Automatic reminder sent by the system');
+  expect(screen.getByRole('status')).toHaveTextContent('open for more than 24 hours');
+});
+
+test('muestra todos los destinatarios en conversaciones grupales', () => {
+  renderWithProviders(
+    <ConversationThread
+      conversation={makeConversation({
+        participants: [factoryCurrentUser, bobUser, carlaUser],
+      })}
+      currentUser={factoryCurrentUser}
+      onReply={() => Promise.resolve()}
+      onUpdateStatus={() => Promise.resolve()}
+    />,
+  );
+
+  expect(screen.getAllByText('Bob Lopez')).toHaveLength(2);
+  expect(screen.getByText('To: me, Carla Soto')).toBeInTheDocument();
 });

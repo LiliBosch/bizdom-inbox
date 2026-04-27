@@ -2,6 +2,7 @@
   "name": "bizdom/mi-inbox-api",
   "description": "API REST para modulo de mensajeria tipo inbox.",
   "type": "project",
+  "license": "proprietary",
   "require": {
     "php": "^8.2",
     "laravel/framework": "^11.0",

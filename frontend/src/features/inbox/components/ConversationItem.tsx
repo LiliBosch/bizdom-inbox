@@ -46,7 +46,10 @@ type Props = {
 
 export function ConversationItem({ conversation, isActive, onSelect }: Props) {
   const { t, language } = useLanguage();
-  const lastMessage = conversation.messages?.[0]?.body ?? t('conversation.noMessagesYet');
+  const hasReminder = Boolean(conversation.latest_reminder?.sent_at);
+  const lastMessage = hasReminder
+    ? t('conversation.reminderListSummary')
+    : (conversation.messages?.[0]?.body ?? t('conversation.noMessagesYet'));
   const isUnread = Boolean(conversation.is_unread);
 
   let slaLevel: SlaLevel = 'normal';
