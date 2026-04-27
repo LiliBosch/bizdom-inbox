@@ -34,6 +34,16 @@ jobs:
       - name: Check formatting
         run: ./vendor/bin/pint --test
 
+      - name: Prepare Laravel runtime directories
+        run: |
+          mkdir -p bootstrap/cache
+          mkdir -p storage/framework/cache/data
+          mkdir -p storage/framework/sessions
+          mkdir -p storage/framework/testing
+          mkdir -p storage/framework/views
+          mkdir -p storage/logs
+          chmod -R 777 bootstrap/cache storage
+
       - name: Run tests
         run: composer test
 
