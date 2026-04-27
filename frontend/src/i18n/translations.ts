@@ -34,7 +34,6 @@ export const translations = {
 
     'thread.selectTitle': 'Select a conversation',
     'thread.aria': 'Reading and writing area',
-    'thread.subjectLabel': 'Message subject',
     'thread.toLabel': 'To',
     'thread.me': 'me',
 
@@ -118,7 +117,6 @@ export const translations = {
 
     'thread.selectTitle': 'Selecciona una conversacion',
     'thread.aria': 'Area de lectura y redaccion',
-    'thread.subjectLabel': 'Asunto del mensaje',
     'thread.toLabel': 'Para',
     'thread.me': 'mi',
 

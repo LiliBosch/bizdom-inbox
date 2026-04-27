@@ -37,6 +37,7 @@ Inbox style messaging module (similar to a support ticket inbox) built with Lara
 - Auth: JWT Bearer tokens signed with HS256 (`firebase/php-jwt`)
 - Frontend: React 18, TypeScript, Vite
 - Tests: PHPUnit (backend), Vitest + React Testing Library (frontend)
+- CI: GitHub Actions runs backend formatting/tests and frontend tests/build on push and pull requests.
 
 ## Business rules
 
@@ -160,6 +161,8 @@ VITE_API_URL=http://localhost:8000/api
 
 ## Tests
 
+GitHub Actions also runs these checks automatically on pushes to `main` and on pull requests.
+
 ### Backend
 
 ```bash
@@ -248,6 +251,7 @@ POST   /api/conversations
 GET    /api/conversations/{conversation}
 PATCH  /api/conversations/{conversation}/status
 POST   /api/conversations/{conversation}/messages
+GET    /api/messages/{message}/attachments/{attachment}
 
 GET    /api/notifications/unread-count
 ```

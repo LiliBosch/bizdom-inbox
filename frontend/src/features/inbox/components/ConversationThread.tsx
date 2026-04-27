@@ -86,8 +86,9 @@ export function ConversationThread({ conversation, currentUser, onReply, onUpdat
           </div>
         )}
         <div className="thread-title-block">
-          <span className="thread-subject-label">{t('thread.subjectLabel')}</span>
-          <h1>{conversation.subject}</h1>
+          <div className="thread-subject-line">
+            <h1>{conversation.subject}</h1>
+          </div>
           <div className="thread-mail-meta">
             <span className="thread-avatar" aria-hidden="true">
               {avatarInitials}
