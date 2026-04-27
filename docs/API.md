@@ -1,8 +1,15 @@
 # API Documentation
 
+Protected endpoints require:
+
+```txt
+Authorization: Bearer <jwt>
+```
+
 ## POST /api/auth/login
 
-Authenticates the user and returns a Bearer token.
+Authenticates the user and returns a JWT Bearer token.
+Tokens are signed with HS256 and are sent on protected requests as `Authorization: Bearer <jwt>`.
 
 Request:
 
@@ -17,7 +24,7 @@ Response:
 
 ```json
 {
-  "token": "1|token",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
     "id": 1,
     "name": "Ana Ramirez",

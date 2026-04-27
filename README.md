@@ -4,7 +4,7 @@ Inbox style messaging module (similar to a support ticket inbox) built with Lara
 
 ## Features
 
-- Authentication with Bearer token.
+- Authentication with JWT Bearer token.
 - Conversations:
   - Paginated list
   - Search
@@ -33,7 +33,7 @@ Inbox style messaging module (similar to a support ticket inbox) built with Lara
 ## Stack
 
 - Backend: Laravel 11, PHP 8.4, MySQL/MariaDB
-- Auth: Sanctum (tokens Bearer)
+- Auth: JWT Bearer tokens signed with HS256 (`firebase/php-jwt`)
 - Frontend: React 18, TypeScript, Vite
 - Tests: PHPUnit (backend), Vitest + React Testing Library (frontend)
 
@@ -146,6 +146,8 @@ DB_USERNAME=root
 DB_PASSWORD=
 
 FRONTEND_URL=http://localhost:5173
+JWT_TTL_MINUTES=1440
+JWT_SECRET=
 ```
 
 ### Frontend (`frontend/.env`)
@@ -334,7 +336,8 @@ In API responses, messages include a `receipts` array with per-recipient timesta
 
 ## Notes and tradeoffs
 
-- Authentication uses Laravel Sanctum Bearer tokens for a simple local API flow.
+- Authentication uses stateless JWT Bearer tokens signed by the backend with `firebase/php-jwt`.
+- `JWT_SECRET` can be set for a dedicated signing secret; when it is empty, the backend falls back to Laravel's `APP_KEY`.
 - Read state is tracked per user through the `conversation_user.read_at` pivot.
 - Message delivery/read receipts are tracked separately through `message_user`.
 - Reminder alerts use a `conversation_reminders` table instead of only a timestamp, so the UI can show the latest reminder details.

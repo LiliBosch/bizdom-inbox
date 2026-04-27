@@ -10,7 +10,6 @@ use App\Models\User;
 use App\Services\ConversationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class ConversationReminderTest extends TestCase
@@ -112,7 +111,7 @@ class ConversationReminderTest extends TestCase
             'sent_at' => now()->subMinutes(5),
         ]);
 
-        Sanctum::actingAs($participant);
+        $this->actingAsJwt($participant);
 
         $response = $this->getJson("/api/conversations/{$conversation->id}");
 

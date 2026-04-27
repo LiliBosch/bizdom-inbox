@@ -6,7 +6,6 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class ConversationTest extends TestCase
@@ -17,7 +16,7 @@ class ConversationTest extends TestCase
     {
         $sender = User::factory()->create();
         $participant = User::factory()->create();
-        Sanctum::actingAs($sender);
+        $this->actingAsJwt($sender);
 
         $response = $this->postJson('/api/conversations', [
             'subject' => 'Seguimiento SAT',
@@ -36,7 +35,7 @@ class ConversationTest extends TestCase
         $participant = User::factory()->create();
         $conversation = Conversation::factory()->create(['created_by' => $sender->id]);
         $conversation->participants()->sync([$sender->id, $participant->id]);
-        Sanctum::actingAs($participant);
+        $this->actingAsJwt($participant);
 
         $response = $this->postJson("/api/conversations/{$conversation->id}/messages", [
             'body' => 'Confirmo la recepcion.',
@@ -44,6 +43,71 @@ class ConversationTest extends TestCase
 
         $response->assertCreated();
         $this->assertDatabaseHas('messages', ['body' => 'Confirmo la recepcion.']);
+    }
+
+    public function test_non_participant_cannot_read_conversation(): void
+    {
+        $owner = User::factory()->create();
+        $participant = User::factory()->create();
+        $outsider = User::factory()->create();
+        $conversation = Conversation::factory()->create(['created_by' => $owner->id]);
+        $conversation->participants()->sync([$owner->id, $participant->id]);
+
+        $this->actingAsJwt($outsider);
+
+        $response = $this->getJson("/api/conversations/{$conversation->id}");
+
+        $response->assertNotFound();
+    }
+
+    public function test_non_participant_cannot_reply_to_conversation(): void
+    {
+        $owner = User::factory()->create();
+        $participant = User::factory()->create();
+        $outsider = User::factory()->create();
+        $conversation = Conversation::factory()->create(['created_by' => $owner->id]);
+        $conversation->participants()->sync([$owner->id, $participant->id]);
+
+        $this->actingAsJwt($outsider);
+
+        $response = $this->postJson("/api/conversations/{$conversation->id}/messages", [
+            'body' => 'No deberia poder responder.',
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    public function test_reply_body_is_required(): void
+    {
+        $owner = User::factory()->create();
+        $participant = User::factory()->create();
+        $conversation = Conversation::factory()->create(['created_by' => $owner->id]);
+        $conversation->participants()->sync([$owner->id, $participant->id]);
+
+        $this->actingAsJwt($participant);
+
+        $response = $this->postJson("/api/conversations/{$conversation->id}/messages", [
+            'body' => '',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['body']);
+    }
+
+    public function test_participant_list_is_required_to_create_conversation(): void
+    {
+        $sender = User::factory()->create();
+
+        $this->actingAsJwt($sender);
+
+        $response = $this->postJson('/api/conversations', [
+            'subject' => 'Seguimiento SAT',
+            'body' => 'Necesito revisar el caso con soporte.',
+            'participant_ids' => [],
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['participant_ids']);
     }
 
     public function test_conversations_endpoint_marks_unread_conversations(): void
@@ -69,7 +133,7 @@ class ConversationTest extends TestCase
             $participant->id => ['read_at' => now()],
         ]);
 
-        Sanctum::actingAs($user);
+        $this->actingAsJwt($user);
 
         $response = $this->getJson('/api/conversations?per_page=10');
         $response->assertOk();
@@ -104,7 +168,7 @@ class ConversationTest extends TestCase
         ]);
         $conversation->participants()->sync([$user->id, $participant->id]);
 
-        Sanctum::actingAs($participant);
+        $this->actingAsJwt($participant);
 
         $response = $this->patchJson("/api/conversations/{$conversation->id}/status", [
             'status' => 'resolved',
@@ -145,7 +209,7 @@ class ConversationTest extends TestCase
             'read_at' => null,
         ]);
 
-        Sanctum::actingAs($recipient);
+        $this->actingAsJwt($recipient);
 
         $response = $this->getJson("/api/conversations/{$conversation->id}");
         $response->assertOk();

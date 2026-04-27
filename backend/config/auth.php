@@ -12,10 +12,6 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
-        'sanctum' => [
-            'driver' => 'sanctum',
-            'provider' => 'users',
-        ],
     ],
     'providers' => [
         'users' => [
@@ -32,4 +28,6 @@ return [
         ],
     ],
     'password_timeout' => 10800,
+    'jwt_ttl' => env('JWT_TTL_MINUTES', 1440),
+    'jwt_secret' => env('JWT_SECRET'),
 ];

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LoginRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\JwtService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -12,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request, JwtService $jwt): JsonResponse
     {
         $user = User::where('email', $request->validated('email'))->first();
 
@@ -23,7 +24,7 @@ class AuthController extends Controller
         }
 
         return response()->json([
-            'token' => $user->createToken('bizdom-inbox')->plainTextToken,
+            'token' => $jwt->issue($user),
             'user' => new UserResource($user),
         ]);
     }
@@ -35,8 +36,6 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
-
         return response()->json(['message' => 'Sesion cerrada correctamente.']);
     }
 }
